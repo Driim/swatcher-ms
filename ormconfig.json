@@ -1,0 +1,17 @@
+{
+    "type": "mongodb",
+    "host": "localhost",
+    "port": 27017,
+    "database": "swatcher",
+    "synchronize": true,
+    "logging": false,
+    "entities": [
+       "dist/models/*.js"
+    ],
+    "migrations": [
+       "src/migration/**/*.ts"
+    ],
+    "subscribers": [
+       "src/subscriber/**/*.ts"
+    ]
+ }
