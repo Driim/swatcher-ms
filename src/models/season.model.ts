@@ -16,5 +16,5 @@ export class Season {
   starts: number; /* FIXME: can't be less than 1950 */
 
   @Column()
-  actors: [string];
+  actors: string[];
 }

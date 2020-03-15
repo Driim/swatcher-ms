@@ -1,4 +1,4 @@
-import { IsString, IsInt, Min, ValidateNested } from 'class-validator';
+import { IsString, IsInt, Min, ValidateNested, IsNotEmpty } from 'class-validator';
 
 class SeasonDto {
   @IsString()
@@ -18,23 +18,28 @@ class SeasonDto {
   starts: number;
 
   @IsString({ each: true })
-  actors: [string];
+  actors: string[];
 }
 
 export class SerialDto {
   @IsString()
+  @IsNotEmpty()
   name: string;
 
   @IsString({ each: true })
+  @IsNotEmpty({ each: true })
   alias: string[];
 
   @IsString({ each: true })
+  @IsNotEmpty({ each: true })
   genre: string[];
 
   @IsString({ each: true })
+  @IsNotEmpty({ each: true })
   country: string[];
 
   @IsString({ each: true })
+  @IsNotEmpty({ each: true })
   director: string[];
 
   @IsString({ each: true })
