@@ -72,6 +72,7 @@ export class SerialService {
     } else if (existing.length === 1) {
       const result = existing[0];
 
+      /* FIXME: need to find diff of 2 arrays by season name and/or url */
       const duplicate = result.season.find((elem) => {
         return elem.url === serial.season[0].url;
       });

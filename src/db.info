@@ -1,0 +1,34 @@
+User:
+  id: Number,
+  name: String,
+  username: String,
+  active: Number, /* not active means user blocked bot or somethings else */
+  subscriptions: Number, /* number of subscriptions user have */
+  payed: Number
+
+Serial:
+  name: String,
+  alias: [String], /* FIXME: optimize searching by this param too */
+  genre: [String],
+  country: [String],
+  director: [String],
+  voiceover: [String],
+  season: [{
+    name: String,
+    desc: String,
+    img: String,
+    url: String,
+    starts: Number, /* FIXME: can't be less than 1950 */
+    actors: [String]
+  }]
+
+Subscription:
+  serial: Serial
+  fans: [
+      user: User,
+      voiceovers: [String]
+  ]
+
+Context:
+  user: User,
+  subscription: Subscription
