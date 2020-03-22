@@ -15,11 +15,6 @@ import { UIModule } from './ui/ui.module';
         useNewUrlParser: true,
         useUnifiedTopology: true,
         useFindAndModify: false,
-        connectionFactory: (connection: any) => {
-          // eslint-disable-next-line @typescript-eslint/no-var-requires
-          connection.plugin(require('mongoose-autopopulate'));
-          return connection;
-        },
       }),
       inject: [ConfigService],
     }),

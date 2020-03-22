@@ -1,10 +1,9 @@
 import { Module } from '@nestjs/common';
 import { ClientsModule, Transport } from '@nestjs/microservices';
-import { UserService } from './user.provider';
-import { UserController } from './user.controller';
-import { TRANSPORT_SERVICE, UserName } from '../app.constants';
 import { MongooseModule } from '@nestjs/mongoose';
-import { UserSchema } from '../schemas/user.schema';
+import { TRANSPORT_SERVICE, UserName } from '../app.constants';
+import { UserService } from './user.provider';
+import { UserSchema } from '../schemas';
 
 @Module({
   imports: [
@@ -18,7 +17,6 @@ import { UserSchema } from '../schemas/user.schema';
     ]),
   ],
   providers: [UserService],
-  controllers: [UserController],
   exports: [UserService],
 })
 export class UserModule {}

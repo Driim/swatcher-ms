@@ -1,9 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { Serial } from '../interfaces/serial.interface';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { SubscriptionPopulated } from '../interfaces/subscription.interface';
 import { SubsName } from '../app.constants';
+import { Serial, SubscriptionPopulated } from '../interfaces';
 
 @Injectable()
 export class SubscriptionService {
@@ -14,7 +13,6 @@ export class SubscriptionService {
   async findBySerials(serials: Serial[]): Promise<SubscriptionPopulated[]> {
     const ids = serials.map((serial) => serial._id);
     console.log(ids);
-    /* TODO: solve problem */
     return this.subscription
       .find({ serial: { $in: serials } })
       .populate('serial')

@@ -1,6 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ClientsModule, Transport } from '@nestjs/microservices';
-import { Repository, ObjectID } from 'typeorm';
 import { SerialService } from './serial.provider';
 import { TRANSPORT_SERVICE } from '../app.constants';
 import { Serial } from '../interfaces/serial.interface';
@@ -9,6 +8,8 @@ import { DuplicateSerialException } from '../exceptions/duplicate-serial.excepti
 import { MongooseModule, getModelToken } from '@nestjs/mongoose';
 import { SerialModule } from './serial.module';
 import { Model } from 'mongoose';
+import { ObjectID } from 'mongodb';
+import { SerialName } from '../app.constants';
 
 const TESTING_NAME = 'Testing';
 
@@ -39,7 +40,7 @@ describe('Serial Service', () => {
     }).compile();
 
     service = app.get<SerialService>(SerialService);
-    model = app.get<Model<Serial>>(getModelToken('Serial'));
+    model = app.get<Model<Serial>>(getModelToken(SerialName));
 
     const serial = new model();
     serial.name = TESTING_NAME;

@@ -1,6 +1,9 @@
-import * as Fuse from 'fuse.js';
 import { Injectable, Logger } from '@nestjs/common';
-import { Serial } from '../interfaces/serial.interface';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model, Schema } from 'mongoose';
+import * as Fuse from 'fuse.js';
+import { Serial } from '../interfaces';
+import { DuplicateSerialException } from '../exceptions';
 import { SerialDto } from '../dto/serial.dto';
 import {
   FUZZY_SORT,
@@ -11,9 +14,6 @@ import {
   FUZZY_MIN_MATCH,
   SerialName,
 } from '../app.constants';
-import { DuplicateSerialException } from '../exceptions/duplicate-serial.exception';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model, Schema } from 'mongoose';
 
 @Injectable()
 export class SerialService {
@@ -67,6 +67,7 @@ export class SerialService {
     return this.findByIds(ids);
   }
 
+  /* TODO: use Serial interface instead */
   async save(dto: SerialDto): Promise<Serial> {
     const existing = await this.serial.find({ name: dto.name, country: dto.country });
 

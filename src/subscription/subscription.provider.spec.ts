@@ -34,11 +34,6 @@ describe('Serial Service', () => {
             useNewUrlParser: true,
             useUnifiedTopology: true,
             useFindAndModify: false,
-            connectionFactory: (connection: any) => {
-              // eslint-disable-next-line @typescript-eslint/no-var-requires
-              connection.plugin(require('mongoose-autopopulate'));
-              return connection;
-            },
           }),
         }),
         SerialModule,
@@ -69,19 +64,15 @@ describe('Serial Service', () => {
   describe('findBySerials', () => {
     it('should find subscriptions', async () => {
       const serials = await serialService.find(TESTING_NAME);
-      console.log(serials[0]);
       const subs = await subsService.findBySerials([serials[0]]);
 
-      console.log('!!!!!!!!!!!!!!!!!!!');
-      console.log(subs);
-      console.log('!!!!!!!!!!!!!!!!!!!');
       expect(subs.length).toBe(1);
-      // expect(subs[0].serial.name).toBe(TESTING_NAME);
+      expect(subs[0].serial.name).toBe(TESTING_NAME);
     });
   });
 
   afterAll(async () => {
-    // await subscriptionModel.remove({}).exec();
-    // await serialModel.remove({}).exec();
+    await subscriptionModel.remove({}).exec();
+    await serialModel.remove({}).exec();
   });
 });

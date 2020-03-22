@@ -1,6 +1,6 @@
 import { Injectable, Inject, Logger } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
-import { User } from '../models/user.model';
+import { User } from '../interfaces/user.interface';
 import {
   TRANSPORT_SERVICE,
   COMMAND_HELP,
@@ -13,8 +13,9 @@ import { MessageHander } from '../interfaces/message-handler.interface';
 import { MESSAGE_REMOVE_USER, MESSAGE_HELP, MESSAGE_NO_THANKS } from '../app.strings';
 import { COMMAND_STOP } from '../app.constants';
 import { Serial } from '../interfaces/serial.interface';
-import { NothingFoundException } from 'src/exceptions/nothing-found.exception';
-import { SubscriptionService } from 'src/subscription/subscription.provider';
+import { NothingFoundException } from '../exceptions/nothing-found.exception';
+import { SubscriptionService } from '../subscription/subscription.provider';
+import { SerialService } from '../serial/serial.provider';
 
 @Injectable()
 export class UIService {
@@ -29,6 +30,7 @@ export class UIService {
     @Inject(TRANSPORT_SERVICE)
     private readonly client: ClientProxy,
     private readonly subscriptionService: SubscriptionService,
+    private readonly serialService: SerialService,
   ) {
     this.handlers = [
       {
@@ -59,7 +61,7 @@ export class UIService {
   }
 
   public async find(user: User, message: string): Promise<void> {
-    const serials = await this.client.send<Serial[], string>('serial_find', message).toPromise();
+    const serials = await this.serialService.find(message);
 
     if (serials.length == 0) {
       throw new NothingFoundException(message);
