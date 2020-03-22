@@ -1,11 +1,12 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
 import { SerialService } from './serial.provider';
 import { SerialController } from './serial.controller';
-import { Serial } from '../models/serial.model';
+import { MongooseModule } from '@nestjs/mongoose';
+import { SerialSchema } from '../schemas/serial.schema';
+import { SerialName } from '../app.constants';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Serial])],
+  imports: [MongooseModule.forFeature([{ name: SerialName, schema: SerialSchema }])],
   providers: [SerialService],
   controllers: [SerialController],
   exports: [SerialService],

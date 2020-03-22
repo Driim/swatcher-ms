@@ -13,3 +13,9 @@ export const COMMAND_HELP = /\/help/i;
 export const COMMAND_ID = /\/id/i;
 export const COMMAND_NO_THANKS = /Нет, не надо/i;
 export const COMMAND_NOT_THAT = /Нет, не то/i;
+
+export const MAX_SEARCH_COUNT = 5;
+
+export const SubsName = 'subscription';
+export const SerialName = 'serial';
+export const UserName = 'user';

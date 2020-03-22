@@ -1,7 +1,7 @@
 import { Controller, Logger, UsePipes, ValidationPipe } from '@nestjs/common';
 import { Payload, MessagePattern } from '@nestjs/microservices';
 import { SerialService } from './serial.provider';
-import { Serial } from '../models/serial.model';
+import { Serial } from '../interfaces/serial.interface';
 import { SerialDto } from '../dto/serial.dto';
 
 @Controller()

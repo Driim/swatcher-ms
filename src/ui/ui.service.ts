@@ -7,11 +7,14 @@ import {
   COMMAND_ID,
   COMMAND_NOT_THAT,
   COMMAND_NO_THANKS,
+  MAX_SEARCH_COUNT,
 } from '../app.constants';
 import { MessageHander } from '../interfaces/message-handler.interface';
 import { MESSAGE_REMOVE_USER, MESSAGE_HELP, MESSAGE_NO_THANKS } from '../app.strings';
 import { COMMAND_STOP } from '../app.constants';
-import { Serial } from 'src/models/serial.model';
+import { Serial } from '../interfaces/serial.interface';
+import { NothingFoundException } from 'src/exceptions/nothing-found.exception';
+import { SubscriptionService } from 'src/subscription/subscription.provider';
 
 @Injectable()
 export class UIService {
@@ -25,6 +28,7 @@ export class UIService {
   constructor(
     @Inject(TRANSPORT_SERVICE)
     private readonly client: ClientProxy,
+    private readonly subscriptionService: SubscriptionService,
   ) {
     this.handlers = [
       {
@@ -50,18 +54,32 @@ export class UIService {
     ];
   }
 
-  getHandlers(): MessageHander[] {
+  public getHandlers(): MessageHander[] {
     return this.handlers;
   }
 
-  async sendMessage(user: User, message: string, opts?: unknown): Promise<void> {
-    this.client.emit<void>('send_message', { user: user.id, message, opts });
+  public async find(user: User, message: string): Promise<void> {
+    const serials = await this.client.send<Serial[], string>('serial_find', message).toPromise();
+
+    if (serials.length == 0) {
+      throw new NothingFoundException(message);
+    }
+
+    let subscriptions = await this.subscriptionService.findBySerials(serials);
+    subscriptions = subscriptions
+      .sort((a, b) => b.fans.length - a.fans.length)
+      .slice(0, MAX_SEARCH_COUNT);
+
+    console.log(subscriptions);
   }
 
-  async find(user: User, message: string): Promise<void> {
-    const serials = await this.client.send<Serial[], string>('serial_find', message).toPromise();
-    const ids = serials.map((serial) => serial.id);
+  async sendMessage(user: User, message: string, opts?: unknown): Promise<void> {
+    this.client
+      .emit<void>('send_message', { user: user.id, message, opts })
+      .toPromise();
   }
+
+  /* All functions near is arrow functiosn because their used called in other context */
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public remove = async (user: User, _message: string): Promise<void> => {

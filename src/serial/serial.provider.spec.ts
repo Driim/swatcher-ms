@@ -1,18 +1,20 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ClientsModule, Transport } from '@nestjs/microservices';
-import { TypeOrmModule, getRepositoryToken } from '@nestjs/typeorm';
 import { Repository, ObjectID } from 'typeorm';
 import { SerialService } from './serial.provider';
 import { TRANSPORT_SERVICE } from '../app.constants';
-import { Serial } from '../models/serial.model';
+import { Serial } from '../interfaces/serial.interface';
 import { SerialDto } from '../dto/serial.dto';
-import { BadRequestException } from '@nestjs/common';
+import { DuplicateSerialException } from '../exceptions/duplicate-serial.exception';
+import { MongooseModule, getModelToken } from '@nestjs/mongoose';
+import { SerialModule } from './serial.module';
+import { Model } from 'mongoose';
 
 const TESTING_NAME = 'Testing';
 
 describe('Serial Service', () => {
   let service: SerialService;
-  let repo: Repository<Serial>;
+  let model: Model<Serial>;
 
   beforeAll(async () => {
     const app: TestingModule = await Test.createTestingModule({
@@ -24,25 +26,22 @@ describe('Serial Service', () => {
             options: { url: 'redis://localhost:6379' },
           },
         ]),
-        TypeOrmModule.forRoot({
-          type: 'mongodb',
-          host: 'localhost',
-          port: 27017,
-          useUnifiedTopology: true,
-          database: 'swatcher',
-          synchronize: true,
-          logging: true,
-          entities: [Serial],
+        MongooseModule.forRootAsync({
+          useFactory: async () => ({
+            uri: 'mongodb://localhost:27017/swatcher_test',
+            useNewUrlParser: true,
+            useUnifiedTopology: true,
+            useFindAndModify: false,
+          }),
         }),
-        TypeOrmModule.forFeature([Serial]),
+        SerialModule,
       ],
-      providers: [SerialService],
     }).compile();
 
     service = app.get<SerialService>(SerialService);
-    repo = app.get(getRepositoryToken(Serial));
+    model = app.get<Model<Serial>>(getModelToken('Serial'));
 
-    const serial = new Serial();
+    const serial = new model();
     serial.name = TESTING_NAME;
     serial.alias = ['Alias'];
     serial.country = ['Russia'];
@@ -50,7 +49,7 @@ describe('Serial Service', () => {
     serial.genre = [];
     serial.voiceover = [];
     serial.season = [];
-    await repo.save(serial);
+    await serial.save();
   });
 
   describe('find', () => {
@@ -121,7 +120,7 @@ describe('Serial Service', () => {
     });
 
     it('should throw expection if find more then 1 serial', async () => {
-      const serial = new Serial();
+      const serial = new model();
       serial.name = SERIAL_NAME;
       serial.alias = ['Alias'];
       serial.country = ['Russia'];
@@ -129,18 +128,18 @@ describe('Serial Service', () => {
       serial.genre = [];
       serial.voiceover = [];
       serial.season = [];
-      const duplicate = await repo.save(serial);
+      const duplicate = await serial.save();
       expect(duplicate.id).not.toStrictEqual(serialId);
 
       try {
         await service.save(serial);
       } catch (e) {
-        expect(e).toBeInstanceOf(BadRequestException);
+        expect(e).toBeInstanceOf(DuplicateSerialException);
       }
     });
   });
 
   afterAll(() => {
-    repo.clear();
+    model.remove({});
   });
 });

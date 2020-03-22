@@ -17,6 +17,7 @@ export class UIController {
   @UsePipes(ValidationPipe)
   @EventPattern('received_message')
   async receivedMessage(@Payload() data: TelegramMessageDto): Promise<void> {
+    console.log(data);
     const user = await this.userService.find(data.id);
     const text = escapeString(data.message);
 
@@ -25,7 +26,7 @@ export class UIController {
       if (COMMAND_START.test(text)) {
         this.logger.log(`Создаем нового пользователя ${data.username}`);
         const newUser = await this.userService.create(data.id, data.username);
-        return this.uiService.sendMessage(newUser, MESSAGE_CREATE_USER(newUser.username));
+        return await this.uiService.sendMessage(newUser, MESSAGE_CREATE_USER(newUser.username));
       } else {
         throw new UserNotFoundException();
       }

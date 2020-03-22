@@ -4,6 +4,7 @@ import { UIController } from './ui.controller';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { TRANSPORT_SERVICE } from '../app.constants';
 import { UserModule } from '../user/user.module';
+import { SubscriptionModule } from '../subscription/subscription.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { UserModule } from '../user/user.module';
       },
     ]),
     UserModule,
+    SubscriptionModule,
   ],
   providers: [UIService],
   controllers: [UIController],
