@@ -4,6 +4,7 @@ import { TRANSPORT_SERVICE, UserName } from '../app.constants';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User } from '../interfaces/user.interface';
+import { SubscriptionService } from 'src/subscription/subscription.provider';
 
 @Injectable()
 export class UserService {
@@ -11,6 +12,7 @@ export class UserService {
     @Inject(TRANSPORT_SERVICE)
     private readonly client: ClientProxy,
     @InjectModel(UserName) private user: Model<User>,
+    private readonly subscriptionsService: SubscriptionService
   ) {}
 
   async create(id: number, username: string): Promise<User> {
@@ -47,7 +49,7 @@ export class UserService {
       user.active = false;
       this.save(user);
 
-      this.client.emit<void>('subscriptions_clear', id);
+      this.subscriptionsService.clearSubscriptions(user);
     }
   }
 }

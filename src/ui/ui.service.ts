@@ -1,4 +1,4 @@
-import { Injectable, Inject, Logger, BadRequestException } from '@nestjs/common';
+import { Injectable, Inject, Logger } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { User } from '../interfaces/user.interface';
 import {
@@ -10,7 +10,7 @@ import {
   MAX_SEARCH_COUNT,
   COMMAND_LIST,
   COMMAND_UNSUBSCRIBE,
-  MAX_FREE_SERIALS,
+  COMMAND_STOP
 } from '../app.constants';
 import { MessageHander } from '../interfaces/message-handler.interface';
 import {
@@ -30,16 +30,17 @@ import {
   MESSAGE_UNSUBSCRIBE,
   MESSAGE_SUBS_VOICEOVER,
   MESSAGE_SUBS_MESSAGE,
-  MESSAGE_SUBS_ENOUTH,
   MESSAGE_SUBS_ALL,
-  MESSAGE_SUBS_MESSAGE_PAYED
+  MESSAGE_SUBS_MESSAGE_PAYED,
+  MESSAGE_SUBS_ENOUTH,
+  MESSAGE_VOICE_ADD
 } from '../app.strings';
-import { COMMAND_STOP } from '../app.constants';
 import { Serial } from '../interfaces/serial.interface';
-import { SwatcherNothingFoundException, SwatcherBadRequestException, SwatcherLimitExceedException } from '../exceptions';
+import { SwatcherNothingFoundException, SwatcherBadRequestException } from '../exceptions';
 import { SubscriptionService } from '../subscription/subscription.provider';
 import { SerialService } from '../serial/serial.provider';
 import { SubscriptionPopulated } from '../interfaces';
+import { ContextService } from '../context/context.provider';
 
 @Injectable()
 export class UIService {
@@ -55,6 +56,7 @@ export class UIService {
     private readonly client: ClientProxy,
     private readonly subscriptionService: SubscriptionService,
     private readonly serialService: SerialService,
+    private readonly contextService: ContextService
   ) {
     this.handlers = [
       {
@@ -131,27 +133,6 @@ export class UIService {
      }
   }
 
-  private async findSubscriptionBySerialName(user: User, name: string): Promise<SubscriptionPopulated> {
-    const serial = await this.serialService.findExact(name);
-    if (!serial) {
-      throw new SwatcherNothingFoundException(user, name);
-    }
-
-    // find serial subscriptions
-    const subscriptions = await this.subscriptionService.findBySerials([serial]);
-    const subscription = subscriptions[0];
-    if (!subscription) {
-      throw new SwatcherBadRequestException(user, name);
-    }
-
-    return subscription;
-  }
-
-  private async createContext(user: User, subscription: SubscriptionPopulated): Promise<void> {
-    // remove all contexts for user 
-    // create new context and save it
-  }
-
   public getHandlers(): MessageHander[] {
     return this.handlers;
   }
@@ -175,7 +156,8 @@ export class UIService {
       .sort((a, b) => b.fans.length - a.fans.length)
       .slice(0, MAX_SEARCH_COUNT);
 
-    const opts = await this.sendPreviewAndGenerateKeyboard(user, MESSAGE_ADD_SERIAL, subscriptions);
+    const opts = await this
+      .sendPreviewAndGenerateKeyboard(user, MESSAGE_ADD_SERIAL, subscriptions);
 
      return serials.length === subscriptions.length
       ? this.sendMessage(user, MESSAGE_FIND_ALL, opts)
@@ -209,7 +191,8 @@ export class UIService {
     this.logger.log(`Отдаем список пользователю ${user.id}`);
     const subscriptions = await this.subscriptionService.findByUser(user);
 
-    const opts = await this.sendPreviewAndGenerateKeyboard(user, MESSAGE_LIST_REMOVE, subscriptions);
+    const opts = await this
+      .sendPreviewAndGenerateKeyboard(user, MESSAGE_LIST_REMOVE, subscriptions);
 
     return this.sendMessage(user, MESSAGE_LIST_MESSAGE, opts);
   }
@@ -217,37 +200,23 @@ export class UIService {
   public unsubscribe = async (user: User, serialName: string): Promise<void> => {
     this.logger.log(`Удаляет подписку на ${serialName} пользователя ${user.id}`);
 
-    const subscription = await this.findSubscriptionBySerialName(user, serialName);
-    const index = subscription.fans.findIndex((item) => item.user == user._id);
-    if (index === -1) {
-      throw new SwatcherBadRequestException(user, serialName);
+    const serial = await this.serialService.findExact(serialName);
+    if (!serial) {
+      throw new SwatcherNothingFoundException(user, serialName);
     }
 
-    subscription.fans.splice(index, 1);
-    await subscription.save();
-
+    await this.subscriptionService.removeSubscription(user, serial);
     return this.sendMessage(user, MESSAGE_UNSUBSCRIBE(serialName), this.clearKeyboard);
   }
 
   public subscribe = async (user: User, serialName: string): Promise<void> => {
+    const serial = await this.serialService.findExact(serialName);
+    if (!serial) {
+      throw new SwatcherNothingFoundException(user, serialName);
+    }
+    
     this.logger.log(`Добавляем подписку на сериал ${serialName} пользователю ${user.id}`);
-
-    // check if user excided limit(free)
-    if (user.payed === 0) {
-      const subs = await this.subscriptionService.findByUser(user);
-      if (subs.length > MAX_FREE_SERIALS) {
-        this.logger.log(`Пользовтель ${user.id} израсходовал лимит подписок`);
-        throw new SwatcherLimitExceedException(user, serialName);
-      }
-    }
-  
-    const subscription = await this.findSubscriptionBySerialName(user, serialName);
-    const alreadySubscribed = subscription.fans.find((fan) => fan.user == user._id);
-    if (!alreadySubscribed) {
-      this.logger.log(`Подписали ${user.id} на ${serialName}`);
-      subscription.fans.push({ user: user._id, voiceover: [] });
-      await subscription.save();
-    }
+    const subscription = await this.subscriptionService.addSubscription(user, serial);
 
     /** TODO: create class for message opts */
     let opts: any;
@@ -260,10 +229,9 @@ export class UIService {
       for(const voiceover of subscription.serial.voiceover) {
         keyboard.push([`${MESSAGE_SUBS_VOICEOVER} ${voiceover}`]);
       }
-
-      alreadySubscribed
-        ? keyboard.push([MESSAGE_SUBS_ENOUTH])
-        : keyboard.push([MESSAGE_SUBS_ALL]);
+      
+      keyboard.push([MESSAGE_SUBS_ALL]);
+      keyboard.push([MESSAGE_SUBS_ENOUTH]);
 
       opts = {
         reply_markup: JSON.stringify({
@@ -273,7 +241,7 @@ export class UIService {
         })
       }
 
-      this.createContext(user, subscription);
+      this.contextService.createContext(user, subscription);
 
       answer = MESSAGE_SUBS_MESSAGE_PAYED;
     } else {
@@ -282,5 +250,78 @@ export class UIService {
     }
 
     return this.sendMessage(user, `${answer}  ${subscription.serial.name}`, opts);
+  }
+
+  public addVoiceover = async (user: User, voiceover: string): Promise<void> => {
+    const context = await this.contextService.getContext(user);
+    if (!context) {
+      throw new SwatcherBadRequestException(user, voiceover);
+    }
+
+    const fan = context.subscription.fans.find((fan) => fan.user === user._id);
+    if (!fan) {
+      throw new SwatcherBadRequestException(user, voiceover);
+    }
+
+    const index = fan.voiceover.findIndex((value) => value === voiceover);
+    if (index === -1) {
+      fan.voiceover.push(voiceover);
+    }
+
+    const serial = context.subscription.serial;
+    this.logger
+      .log(`Добавляем озвучку ${voiceover} сериалу ${serial.name} пользователю ${user.id}`);
+
+    await context.subscription.save();
+
+    const diff = context
+      .subscription
+      .serial
+      .voiceover
+      .filter((voice) => !fan.voiceover.includes(voice));
+
+    const keyboard = [[]];
+    for(const voiceover of diff) {
+      keyboard.push([`${MESSAGE_SUBS_VOICEOVER} ${voiceover}`]);
+    }
+    
+    keyboard.push([MESSAGE_SUBS_ALL]);
+    keyboard.push([MESSAGE_SUBS_ENOUTH]);
+
+    const opts = {
+      reply_markup: JSON.stringify({
+        keyboard,
+        one_time_keyboard: true,
+        resize_keyboard: true
+      })
+    }
+
+    return this.sendMessage(user, `${MESSAGE_VOICE_ADD} ${voiceover}`, opts);
+  }
+
+  public enouthVoiceovers = async (user: User, _message: string): Promise<void> => {
+    await this.contextService.clearContext(user);
+    return this.sendMessage(user, MESSAGE_OK, this.clearKeyboard);
+  }
+
+  public clearVoiceovers = async (user: User, _message: string): Promise<void> => {
+    const context = await this.contextService.getContext(user);
+    if (!context) {
+      throw new SwatcherBadRequestException(user, _message);
+    }
+
+    const fan = context.subscription.fans.find((fan) => fan.user === user._id);
+    if (!fan) {
+      throw new SwatcherBadRequestException(user, _message);
+    }
+
+    const serial = context.subscription.serial;
+    this.logger
+      .log(`Очищаем подписку на озвучки пользователю ${user.id} на сериал ${serial.name}`);
+
+    fan.voiceover = [];
+    await context.subscription.save();
+
+    return this.sendMessage(user, MESSAGE_OK, this.clearKeyboard);
   }
 }

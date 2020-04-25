@@ -14,6 +14,7 @@ export const MESSAGE_SUBS_VOICEOVER = 'В озвучке';
 export const MESSAGE_SUBS_MESSAGE = 'Теперь вы подписаны на сериал:';
 export const MESSAGE_SUBS_ENOUTH = 'Достаточно озвучек';
 export const MESSAGE_SUBS_ALL = 'В любой озвучке';
+export const MESSAGE_VOICE_ADD = 'Добавили озвучку';
 export const MESSAGE_SUBS_MESSAGE_PAYED = 'Выберете интересующие вас варианты озвучки сериала';
 export const MESSAGE_UNSUBSCRIBE = (serial: string) => `Вы отписались от сериала: ${serial}`;
 export const MESSAGE_FIND_EXT = (count: number): string => 

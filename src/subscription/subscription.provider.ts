@@ -1,31 +1,92 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { SubsName } from '../app.constants';
+import { SubsName, MAX_FREE_SERIALS } from '../app.constants';
 import { Serial, SubscriptionPopulated, User } from '../interfaces';
+import { SwatcherBadRequestException, SwatcherLimitExceedException } from 'src/exceptions';
 
 @Injectable()
 export class SubscriptionService {
   private readonly logger = new Logger(SubscriptionService.name);
 
-  constructor(@InjectModel(SubsName) private subscription: Model<SubscriptionPopulated>) {}
+  constructor(
+    @InjectModel(SubsName)
+    private subscription: Model<SubscriptionPopulated>
+  ) {}
 
-  async findBySerials(serials: Serial[]): Promise<SubscriptionPopulated[]> {
+  private async getSubscription(serial: Serial)
+  : Promise<SubscriptionPopulated> {
+    const subscriptions = await this.findBySerials([serial]);
+    return subscriptions[0];
+  }
+
+  async findBySerials(serials: Serial[])
+  : Promise<SubscriptionPopulated[]> {
     return this.subscription
       .find({ serial: { $in: serials } })
       .populate('serial')
       .exec();
   }
 
-  async findByUser(user: User): Promise<SubscriptionPopulated[]> {
+  async findByUser(user: User)
+  : Promise<SubscriptionPopulated[]> {
     return this.subscription
       .find({ 'fans.user': user._id })
       .populate('serial')
       .exec();
   }
-  // async addSubscription(serial: Serial, user: User): Promise<void> {}
-  // async removeSubscription(serial: Serial, user: User): Promise<void> {}
-  // async clearSubscription(user: number): Promise<void> {}
-  // async addVoiceover(serial: Serial, user: User, voiceover: string): Promise<string[]> {}
-  // async clearVoiceover(serial: Serial, user: User): Promise<void> {}
+
+  async addSubscription(user: User, serial: Serial)
+  : Promise<SubscriptionPopulated> {
+    if (user.payed === 0) {
+      const subs = await this.findByUser(user);
+      if (subs.length > MAX_FREE_SERIALS) {
+        this.logger.log(`Пользовтель ${user.id} израсходовал лимит подписок`);
+        throw new SwatcherLimitExceedException(user, serial.name);
+      }
+    }
+
+    const subscription = await this.getSubscription(serial);
+    if (!subscription) {
+      throw new SwatcherBadRequestException(user, serial.name);
+    }
+
+    const alreadySubscribed = subscription.fans.find((fan) => fan.user == user._id);
+    if (!alreadySubscribed) {
+      this.logger.log(`Подписали ${user.id} на ${serial.name}`);
+      subscription.fans.push({ user: user._id, voiceover: [] });
+      await subscription.save();
+    }
+
+    return subscription;
+  }
+
+  async removeSubscription(user: User, serial: Serial)
+  : Promise<void> {
+    const subscription = await this.getSubscription(serial);
+    if (!subscription) {
+      throw new SwatcherBadRequestException(user, serial.name);
+    }
+
+    const index = subscription.fans.findIndex((item) => item.user == user._id);
+    if (index === -1) {
+      throw new SwatcherBadRequestException(user, serial.name);
+    }
+
+    subscription.fans.splice(index, 1);
+    await subscription.save();
+  }
+
+  async clearSubscriptions(user: User)
+  : Promise<void> {
+    const subscriptions = await this.findByUser(user);
+
+    for(const subscription of subscriptions) {
+      const index = subscription.fans
+        .findIndex((value) => value.user === user._id);
+      
+      subscription.fans.splice(index, 1);
+      await subscription.save();
+    }
+  }
 }
