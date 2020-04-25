@@ -43,6 +43,10 @@ export class SerialService {
     this.fuse = new Fuse(names, this.fuseOpts);
   }
 
+  async findExact(name: string): Promise<Serial> {
+    return await this.serial.findOne({ name }).exec();
+  }
+
   async find(name: string): Promise<Serial[]> {
     const exactMatch = await this.serial
       .find()
@@ -67,7 +71,7 @@ export class SerialService {
     return this.findByIds(ids);
   }
 
-  /* TODO: use Serial interface instead */
+  /* TODO: every function using this must catch DuplicateSerialException */
   async save(dto: SerialDto): Promise<Serial> {
     const existing = await this.serial.find({ name: dto.name, country: dto.country });
 

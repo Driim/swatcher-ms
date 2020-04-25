@@ -11,11 +11,19 @@ export const COMMAND_START = /\/start/i;
 export const COMMAND_STOP = /\/stop/i;
 export const COMMAND_HELP = /\/help/i;
 export const COMMAND_ID = /\/id/i;
-export const COMMAND_NO_THANKS = /Нет, не надо/i;
-export const COMMAND_NOT_THAT = /Нет, не то/i;
+export const COMMAND_NO_THANKS = /^Нет, не надо$/i;
+export const COMMAND_NOT_THAT = /^Нет, не то$/i;
+export const COMMAND_LIST = /^Список$/i;
+export const COMMAND_UNSUBSCRIBE = /^Удалить (.+)/i;
+export const COMMAND_SUBSCRIBE = /^Добавить (.+)/i;
+export const COMMAND_VOICEOVER = /^В озвучке (.+)/i;
+export const COMMAND_ANY_VOICEOVER = /^В любой озвучке$/i;
+export const COMMAND_ENOUTH_VOICEOVERS = /^Достаточно озвучек$/i;
 
 export const MAX_SEARCH_COUNT = 5;
+export const MAX_FREE_SERIALS = 2;
 
 export const SubsName = 'subscription';
 export const SerialName = 'serial';
 export const UserName = 'user';
+export const UserContext = 'context';

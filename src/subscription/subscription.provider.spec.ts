@@ -9,12 +9,17 @@ import { SubscriptionModule } from './subscription.module';
 import { MongooseModule, getModelToken } from '@nestjs/mongoose';
 import { SerialModule } from '../serial/serial.module';
 import { Model } from 'mongoose';
+import { UserModule } from '../user/user.module';
+import { UserService } from '../user/user.provider';
+import { User } from '../interfaces';
 
 describe('Serial Service', () => {
   let subsService: SubscriptionService;
   let serialService: SerialService;
   let subscriptionModel: Model<Subscription>;
   let serialModel: Model<Serial>;
+  let serial: Serial;
+  let userService: UserService;
 
   const TESTING_NAME = 'Testing';
 
@@ -38,6 +43,7 @@ describe('Serial Service', () => {
         }),
         SerialModule,
         SubscriptionModule,
+        UserModule
       ],
     }).compile();
 
@@ -45,8 +51,9 @@ describe('Serial Service', () => {
     serialService = app.get<SerialService>(SerialService);
     subscriptionModel = app.get<Model<Subscription>>(getModelToken(SubsName));
     serialModel = app.get<Model<Serial>>(getModelToken(SerialName));
+    userService = app.get<UserService>(UserService);
 
-    const serial = new serialModel();
+    serial = new serialModel();
     serial.name = TESTING_NAME;
     serial.alias = ['Alias'];
     serial.country = ['Russia'];
@@ -55,24 +62,51 @@ describe('Serial Service', () => {
     serial.voiceover = [];
     serial.season = [];
     await serial.save();
-
-    const subscription = new subscriptionModel();
-    subscription.serial = serial._id;
-    await subscription.save();
   });
 
   describe('findBySerials', () => {
+    beforeEach(async () => {
+      const subscription = new subscriptionModel();
+      subscription.serial = serial._id;
+      await subscription.save();
+    });
+
     it('should find subscriptions', async () => {
       const serials = await serialService.find(TESTING_NAME);
-      const subs = await subsService.findBySerials([serials[0]]);
+      const subs = await subsService.findBySerials(serials);
 
       expect(subs.length).toBe(1);
       expect(subs[0].serial.name).toBe(TESTING_NAME);
     });
   });
 
-  afterAll(async () => {
+  describe('findByUser', () => {
+    let user: User;
+    beforeEach(async () => {
+      user = await userService.create(1, 'user');
+      const subscription = new subscriptionModel();
+      subscription.serial = serial._id;
+      subscription.fans.push({
+        user: user._id,
+        voiceover: []
+      });
+  
+      await subscription.save();
+    });
+
+    it('should find subscriptions', async () => {
+      const subs = await subsService.findByUser(user);
+
+      expect(subs.length).toBe(1);
+      expect(subs[0].fans[0].user).toStrictEqual(user._id);
+    });
+  });
+
+  afterEach(async () => {
     await subscriptionModel.remove({}).exec();
+  });
+
+  afterAll(async () => {
     await serialModel.remove({}).exec();
   });
 });

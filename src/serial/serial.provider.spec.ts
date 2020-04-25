@@ -140,7 +140,7 @@ describe('Serial Service', () => {
     });
   });
 
-  afterAll(() => {
-    model.remove({});
+  afterAll(async () => {
+    await model.remove({}).exec();
   });
 });

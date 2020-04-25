@@ -1,7 +1,7 @@
 import * as escapeString from 'escape-string-regexp';
 import { Controller, Logger, UsePipes, ValidationPipe } from '@nestjs/common';
 import { EventPattern, Payload } from '@nestjs/microservices';
-import { UserNotFoundException } from '../exceptions/user-not-found.exception';
+import { SwatcherUserNotFoundException } from '../exceptions/user-not-found.exception';
 import { TelegramMessageDto } from '../dto/message.dto';
 import { MESSAGE_CREATE_USER } from '../app.strings';
 import { UserService } from '../user/user.provider';
@@ -12,7 +12,10 @@ import { COMMAND_START } from 'src/app.constants';
 export class UIController {
   private readonly logger = new Logger(UIController.name);
 
-  constructor(private readonly userService: UserService, private readonly uiService: UIService) {}
+  constructor(
+    private readonly userService: UserService,
+    private readonly uiService: UIService
+  ) {}
 
   @UsePipes(ValidationPipe)
   @EventPattern('received_message')
@@ -24,11 +27,11 @@ export class UIController {
     if (!user) {
       /* The only command working without registration */
       if (COMMAND_START.test(text)) {
-        this.logger.log(`Создаем нового пользователя ${data.username}`);
+        this.logger.log(`Создаем нового пользователя ${data.id}`);
         const newUser = await this.userService.create(data.id, data.username);
         return await this.uiService.sendMessage(newUser, MESSAGE_CREATE_USER(newUser.username));
       } else {
-        throw new UserNotFoundException();
+        throw new SwatcherUserNotFoundException(data.id);
       }
     }
 

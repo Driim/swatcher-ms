@@ -1,7 +1,7 @@
 import { RpcException } from '@nestjs/microservices';
 
-export class UserNotFoundException extends RpcException {
-  constructor() {
+export class SwatcherUserNotFoundException extends RpcException {
+  constructor(private readonly id: number) {
     super('User not found');
   }
 }
