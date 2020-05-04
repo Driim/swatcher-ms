@@ -35,7 +35,10 @@ export class ContextService {
   : Promise<ContextPopulated> {
     return this.context
       .findOne({ user: user._id })
-      .populate('subscription')
+      .populate({
+        path: 'subscription',
+        populate: { path: 'serial' }
+      })
       .exec();
   }
 }

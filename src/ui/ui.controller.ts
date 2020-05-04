@@ -6,7 +6,7 @@ import { TelegramMessageDto } from '../dto/message.dto';
 import { MESSAGE_CREATE_USER } from '../app.strings';
 import { UserService } from '../user/user.provider';
 import { UIService } from './ui.service';
-import { COMMAND_START } from 'src/app.constants';
+import { COMMAND_START } from '../app.constants';
 
 @Controller()
 export class UIController {
@@ -20,7 +20,6 @@ export class UIController {
   @UsePipes(ValidationPipe)
   @EventPattern('received_message')
   async receivedMessage(@Payload() data: TelegramMessageDto): Promise<void> {
-    console.log(data);
     const user = await this.userService.find(data.id);
     const text = escapeString(data.message);
 
@@ -44,6 +43,7 @@ export class UIController {
       const message = handler.regexp.exec(text)[1];
       await handler.handle(user, message);
     } else {
+      /** default action */
       await this.uiService.find(user, text);
     }
   }

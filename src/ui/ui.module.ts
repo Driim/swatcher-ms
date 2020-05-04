@@ -6,6 +6,7 @@ import { TRANSPORT_SERVICE } from '../app.constants';
 import { UserModule } from '../user/user.module';
 import { SubscriptionModule } from '../subscription/subscription.module';
 import { SerialModule } from '../serial/serial.module';
+import { ContextModule } from '../context/context.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { SerialModule } from '../serial/serial.module';
     UserModule,
     SubscriptionModule,
     SerialModule,
+    ContextModule
   ],
   providers: [UIService],
   controllers: [UIController],

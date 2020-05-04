@@ -1,9 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Schema } from 'mongoose';
 import { SubsName, MAX_FREE_SERIALS } from '../app.constants';
-import { Serial, SubscriptionPopulated, User } from '../interfaces';
-import { SwatcherBadRequestException, SwatcherLimitExceedException } from 'src/exceptions';
+import { Serial, SubscriptionPopulated, User, Subscription } from '../interfaces';
+import { SwatcherBadRequestException, SwatcherLimitExceedException } from '../exceptions';
 
 @Injectable()
 export class SubscriptionService {
@@ -11,7 +11,9 @@ export class SubscriptionService {
 
   constructor(
     @InjectModel(SubsName)
-    private subscription: Model<SubscriptionPopulated>
+    private populatedSubscription: Model<SubscriptionPopulated>,
+    @InjectModel(SubsName)
+    private subscription: Model<Subscription>
   ) {}
 
   private async getSubscription(serial: Serial)
@@ -22,7 +24,7 @@ export class SubscriptionService {
 
   async findBySerials(serials: Serial[])
   : Promise<SubscriptionPopulated[]> {
-    return this.subscription
+    return this.populatedSubscription
       .find({ serial: { $in: serials } })
       .populate('serial')
       .exec();
@@ -30,10 +32,17 @@ export class SubscriptionService {
 
   async findByUser(user: User)
   : Promise<SubscriptionPopulated[]> {
-    return this.subscription
+    return this.populatedSubscription
       .find({ 'fans.user': user._id })
       .populate('serial')
       .exec();
+  }
+
+  findFan(user: User, subs: SubscriptionPopulated): {
+    user: Schema.Types.ObjectId
+    voiceover: string[]
+  } {
+    return subs.fans.find((fan) => String(fan.user) == String(user._id));
   }
 
   async addSubscription(user: User, serial: Serial)
@@ -46,12 +55,18 @@ export class SubscriptionService {
       }
     }
 
-    const subscription = await this.getSubscription(serial);
+    let subscription = await this.getSubscription(serial);
     if (!subscription) {
-      throw new SwatcherBadRequestException(user, serial.name);
+      // create new subscription
+      const subs = new this.subscription();
+      subs.serial = serial._id;
+      await subs.save();
+
+      // to populate serial
+      subscription = await this.getSubscription(serial);
     }
 
-    const alreadySubscribed = subscription.fans.find((fan) => fan.user == user._id);
+    const alreadySubscribed = this.findFan(user, subscription);
     if (!alreadySubscribed) {
       this.logger.log(`Подписали ${user.id} на ${serial.name}`);
       subscription.fans.push({ user: user._id, voiceover: [] });
@@ -68,7 +83,7 @@ export class SubscriptionService {
       throw new SwatcherBadRequestException(user, serial.name);
     }
 
-    const index = subscription.fans.findIndex((item) => item.user == user._id);
+    const index = subscription.fans.findIndex((item) => String(item.user) == String(user._id));
     if (index === -1) {
       throw new SwatcherBadRequestException(user, serial.name);
     }

@@ -10,7 +10,11 @@ import {
   MAX_SEARCH_COUNT,
   COMMAND_LIST,
   COMMAND_UNSUBSCRIBE,
-  COMMAND_STOP
+  COMMAND_STOP,
+  COMMAND_SUBSCRIBE,
+  COMMAND_VOICEOVER,
+  COMMAND_ENOUTH_VOICEOVERS,
+  COMMAND_ANY_VOICEOVER
 } from '../app.constants';
 import { MessageHander } from '../interfaces/message-handler.interface';
 import {
@@ -86,28 +90,24 @@ export class UIService {
       {
         handle: this.unsubscribe,
         regexp: COMMAND_UNSUBSCRIBE,
+      },
+      {
+        handle: this.subscribe,
+        regexp: COMMAND_SUBSCRIBE
+      },
+      {
+        handle: this.addVoiceover,
+        regexp: COMMAND_VOICEOVER
+      },
+      {
+        handle: this.enouthVoiceovers,
+        regexp: COMMAND_ENOUTH_VOICEOVERS
+      },
+      {
+        handle: this.clearVoiceovers,
+        regexp: COMMAND_ANY_VOICEOVER
       }
     ];
-  }
-
-  private async sendSerialPreview(user: User, serial: Serial): Promise<void> {
-    let message = `${serial.name} \n`;
-    message += `${MESSAGE_SEND_ALIAS}: ${serial.alias.join(', ')} \n`;
-    message += `${MESSAGE_SEND_COUNTRY}: ${serial.country.join(', ')}`;
-    message += `${MESSAGE_SEND_GENRE}: ${serial.genre.join(', ')}`;
-    message += `${MESSAGE_SEND_SEASONS}: ${serial.season.length}`;
-
-    const img = serial.season
-      .reduce((a, b) => parseInt(a.name) > parseInt(b.name) ? a : b)
-      .img;
-
-    const opts = {
-      caption: message
-    };
-
-    return this.client
-      .emit<void>('send_photo', { user: user.id, message: img, opts })
-      .toPromise();
   }
 
   private async sendPreviewAndGenerateKeyboard(
@@ -115,7 +115,7 @@ export class UIService {
     pattern: string,
     subscriptions: SubscriptionPopulated[]
   ): Promise<any> {
-    const keyboard = [[]];
+    const keyboard = [];
 
     for(const subs of subscriptions) {
       await this.sendSerialPreview(user, subs.serial);
@@ -137,21 +137,46 @@ export class UIService {
     return this.handlers;
   }
 
-  async sendMessage(user: User, message: string, opts?: unknown): Promise<void> {
+  public async sendSerialPreview(user: User, serial: Serial): Promise<void> {
+    let message = `${serial.name} \n`;
+    message += `${MESSAGE_SEND_ALIAS}: ${serial.alias.join(', ')} \n`;
+    message += `${MESSAGE_SEND_COUNTRY}: ${serial.country.join(', ')}`;
+    message += `${MESSAGE_SEND_GENRE}: ${serial.genre.join(', ')}`;
+    message += `${MESSAGE_SEND_SEASONS}: ${serial.season.length}`;
+
+    const img = serial.season
+      .reduce((a, b) => parseInt(a.name) > parseInt(b.name) ? a : b)
+      .img;
+
+    const opts = {
+      caption: message
+    };
+
+    return this.client
+      .emit<void>('send_photo', { user: user.id, message: img, opts })
+      .toPromise();
+  }
+
+  public async sendMessage(user: User, message: string, opts?: unknown): Promise<void> {
     return this.client
       .emit<void>('send_message', { user: user.id, message, opts })
       .toPromise();
   }
 
   public async find(user: User, message: string): Promise<void> {
-    this.logger.log(`Ищем ${message} для пользователя ${user.id}`);
-    const serials = await this.serialService.find(message);
+    if (!message) {
+      throw new SwatcherBadRequestException(user, message);
+    }
 
+    const serials = await this.serialService.find(message);
     if (serials.length == 0) {
       throw new SwatcherNothingFoundException(user, message);
     }
 
+    this.logger.log(`Ищем ${message} для пользователя ${user.id}`);
+
     let subscriptions = await this.subscriptionService.findBySerials(serials);
+    let beforeLength = subscriptions.length;
     subscriptions = subscriptions
       .sort((a, b) => b.fans.length - a.fans.length)
       .slice(0, MAX_SEARCH_COUNT);
@@ -159,29 +184,26 @@ export class UIService {
     const opts = await this
       .sendPreviewAndGenerateKeyboard(user, MESSAGE_ADD_SERIAL, subscriptions);
 
-     return serials.length === subscriptions.length
+     return beforeLength === subscriptions.length
       ? this.sendMessage(user, MESSAGE_FIND_ALL, opts)
       : this.sendMessage(user, MESSAGE_FIND_EXT(serials.length), opts);
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public remove = async (user: User, _message: string): Promise<void> => {
     this.logger.log(`Удаляем пользователя ${user.id}`);
     this.sendMessage(user, MESSAGE_REMOVE_USER);
+    // TODO: use user service for this
     return this.client.emit<void>('user_block', user.id).toPromise();
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public help = async (user: User, _message: string): Promise<void> => {
     return this.sendMessage(user, MESSAGE_HELP);
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public noThanks = async (user: User, _message: string): Promise<void> => {
     return this.sendMessage(user, MESSAGE_OK, this.clearKeyboard);
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public id = async (user: User, _message: string): Promise<void> => {
     return this.sendMessage(user, String(user.id));
   };
@@ -198,18 +220,26 @@ export class UIService {
   }
 
   public unsubscribe = async (user: User, serialName: string): Promise<void> => {
-    this.logger.log(`Удаляет подписку на ${serialName} пользователя ${user.id}`);
+    if (!serialName) {
+      throw new SwatcherBadRequestException(user, 'empty serial name');
+    }
 
     const serial = await this.serialService.findExact(serialName);
     if (!serial) {
       throw new SwatcherNothingFoundException(user, serialName);
     }
 
+    this.logger.log(`Удаляет подписку на ${serialName} пользователя ${user.id}`);
+    
     await this.subscriptionService.removeSubscription(user, serial);
     return this.sendMessage(user, MESSAGE_UNSUBSCRIBE(serialName), this.clearKeyboard);
   }
 
   public subscribe = async (user: User, serialName: string): Promise<void> => {
+    if (!serialName) {
+      throw new SwatcherBadRequestException(user, 'empty serial name');
+    }
+
     const serial = await this.serialService.findExact(serialName);
     if (!serial) {
       throw new SwatcherNothingFoundException(user, serialName);
@@ -222,7 +252,7 @@ export class UIService {
     let opts: any;
     let answer: string;
     if (user.payed > 0) {
-      const keyboard = [[]];
+      const keyboard = [];
 
       subscription.serial.voiceover = subscription.serial.voiceover || [];
 
@@ -241,7 +271,7 @@ export class UIService {
         })
       }
 
-      this.contextService.createContext(user, subscription);
+      await this.contextService.createContext(user, subscription);
 
       answer = MESSAGE_SUBS_MESSAGE_PAYED;
     } else {
@@ -249,7 +279,7 @@ export class UIService {
       opts = this.clearKeyboard;
     }
 
-    return this.sendMessage(user, `${answer}  ${subscription.serial.name}`, opts);
+    return this.sendMessage(user, `${answer} ${subscription.serial.name}`, opts);
   }
 
   public addVoiceover = async (user: User, voiceover: string): Promise<void> => {
@@ -258,7 +288,12 @@ export class UIService {
       throw new SwatcherBadRequestException(user, voiceover);
     }
 
-    const fan = context.subscription.fans.find((fan) => fan.user === user._id);
+    if (!voiceover) {
+      throw new SwatcherBadRequestException(user, 'empty voiceover');
+    }
+
+    const subscription = context.subscription;
+    const fan = this.subscriptionService.findFan(user, subscription);
     if (!fan) {
       throw new SwatcherBadRequestException(user, voiceover);
     }
@@ -268,19 +303,18 @@ export class UIService {
       fan.voiceover.push(voiceover);
     }
 
-    const serial = context.subscription.serial;
+    const serial = subscription.serial;
     this.logger
-      .log(`Добавляем озвучку ${voiceover} сериалу ${serial.name} пользователю ${user.id}`);
+      .log(`Добавляем озвучку ${voiceover} на сериал ${serial.name} пользователю ${user.id}`);
 
-    await context.subscription.save();
+    await subscription.save();
 
-    const diff = context
-      .subscription
+    const diff = subscription
       .serial
       .voiceover
       .filter((voice) => !fan.voiceover.includes(voice));
 
-    const keyboard = [[]];
+    const keyboard = [];
     for(const voiceover of diff) {
       keyboard.push([`${MESSAGE_SUBS_VOICEOVER} ${voiceover}`]);
     }
@@ -310,7 +344,7 @@ export class UIService {
       throw new SwatcherBadRequestException(user, _message);
     }
 
-    const fan = context.subscription.fans.find((fan) => fan.user === user._id);
+    const fan = this.subscriptionService.findFan(user, context.subscription);
     if (!fan) {
       throw new SwatcherBadRequestException(user, _message);
     }
