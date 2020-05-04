@@ -12,10 +12,7 @@ import { COMMAND_START } from '../app.constants';
 export class UIController {
   private readonly logger = new Logger(UIController.name);
 
-  constructor(
-    private readonly userService: UserService,
-    private readonly uiService: UIService
-  ) {}
+  constructor(private readonly userService: UserService, private readonly uiService: UIService) {}
 
   @UsePipes(ValidationPipe)
   @EventPattern('received_message')

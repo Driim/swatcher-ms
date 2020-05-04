@@ -11,11 +11,10 @@ export class ContextService {
 
   constructor(
     @InjectModel(UserContext)
-    private context: Model<ContextPopulated>
+    private context: Model<ContextPopulated>,
   ) {}
 
-  public async createContext(user: User, subscription: SubscriptionPopulated)
-  : Promise<void> {
+  public async createContext(user: User, subscription: SubscriptionPopulated): Promise<void> {
     await this.clearContext(user);
 
     const context = new this.context();
@@ -31,13 +30,12 @@ export class ContextService {
     await this.context.remove({ user: user._id });
   }
 
-  public async getContext(user: User)
-  : Promise<ContextPopulated> {
+  public async getContext(user: User): Promise<ContextPopulated> {
     return this.context
       .findOne({ user: user._id })
       .populate({
         path: 'subscription',
-        populate: { path: 'serial' }
+        populate: { path: 'serial' },
       })
       .exec();
   }

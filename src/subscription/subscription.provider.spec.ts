@@ -1,3 +1,4 @@
+/* eslint-env node, jest */
 import { Model } from 'mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
 import { ClientsModule, Transport } from '@nestjs/microservices';
@@ -47,15 +48,14 @@ describe('Serial Service', () => {
         }),
         SerialModule,
         SubscriptionModule,
-        UserModule
+        UserModule,
       ],
     }).compile();
 
     subsService = app.get<SubscriptionService>(SubscriptionService);
     serialService = app.get<SerialService>(SerialService);
     subscriptionModel = app.get<Model<Subscription>>(getModelToken(SubsName));
-    subscriptionPopulatedModel = app
-      .get<Model<SubscriptionPopulated>>(getModelToken(SubsName));
+    subscriptionPopulatedModel = app.get<Model<SubscriptionPopulated>>(getModelToken(SubsName));
     serialModel = app.get<Model<Serial>>(getModelToken(SerialName));
     userService = app.get<UserService>(UserService);
     userModel = app.get<Model<User>>(getModelToken(UserName));
@@ -102,9 +102,9 @@ describe('Serial Service', () => {
       subscription.serial = serial._id;
       subscription.fans.push({
         user: user._id,
-        voiceover: []
+        voiceover: [],
       });
-  
+
       await subscription.save();
 
       const subs = await subsService.findByUser(user);
@@ -124,9 +124,9 @@ describe('Serial Service', () => {
       const subs = new subscriptionPopulatedModel();
       jest.spyOn(subsService, 'findByUser').mockResolvedValue([subs, subs, subs]);
 
-      await expect(subsService.addSubscription(user, serial))
-        .rejects
-        .toThrowError(SwatcherLimitExceedException);
+      await expect(subsService.addSubscription(user, serial)).rejects.toThrowError(
+        SwatcherLimitExceedException,
+      );
     });
 
     it('should create subscription', async () => {
@@ -164,22 +164,22 @@ describe('Serial Service', () => {
     });
 
     it('should throw error if there no subsriptions for serial', async () => {
-      await expect(subsService.removeSubscription(user, serial))
-        .rejects
-        .toThrowError(SwatcherBadRequestException);
+      await expect(subsService.removeSubscription(user, serial)).rejects.toThrowError(
+        SwatcherBadRequestException,
+      );
     });
 
     it('should throw error if fan not subsribed', async () => {
       const test = await userService.create(2, 'test');
       await subsService.addSubscription(user, serial);
 
-      await expect(subsService.removeSubscription(test, serial))
-        .rejects
-        .toThrowError(SwatcherBadRequestException);
+      await expect(subsService.removeSubscription(test, serial)).rejects.toThrowError(
+        SwatcherBadRequestException,
+      );
     });
 
     it('should remove subsription', async () => {
-      const result = await subsService.addSubscription(user, serial);
+      await subsService.addSubscription(user, serial);
       await subsService.removeSubscription(user, serial);
 
       const subs = await subsService.findBySerials([serial]);

@@ -7,6 +7,6 @@ import { ContextSchema } from '../schemas/context.schema';
 @Module({
   imports: [MongooseModule.forFeature([{ name: UserContext, schema: ContextSchema }])],
   providers: [ContextService],
-  exports: [ContextService]
+  exports: [ContextService],
 })
-export class ContextModule {};
+export class ContextModule {}

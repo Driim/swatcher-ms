@@ -1,4 +1,4 @@
-import { Injectable, Inject, forwardRef } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { TRANSPORT_SERVICE, UserName } from '../app.constants';
 import { InjectModel } from '@nestjs/mongoose';
@@ -12,7 +12,7 @@ export class UserService {
     @Inject(TRANSPORT_SERVICE)
     private readonly client: ClientProxy,
     @InjectModel(UserName) private user: Model<User>,
-    private readonly subscriptionsService: SubscriptionService
+    private readonly subscriptionsService: SubscriptionService,
   ) {}
 
   async create(id: number, username: string): Promise<User> {

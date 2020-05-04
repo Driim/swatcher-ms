@@ -5,10 +5,10 @@ export const ContextSchema = new Schema({
   user: {
     type: Schema.Types.ObjectId,
     ref: UserName,
-    index: true
+    index: true,
   },
   subscription: {
     type: Schema.Types.ObjectId,
-    ref: SubsName
-  }
+    ref: SubsName,
+  },
 });

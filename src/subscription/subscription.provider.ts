@@ -13,40 +13,39 @@ export class SubscriptionService {
     @InjectModel(SubsName)
     private populatedSubscription: Model<SubscriptionPopulated>,
     @InjectModel(SubsName)
-    private subscription: Model<Subscription>
+    private subscription: Model<Subscription>,
   ) {}
 
-  private async getSubscription(serial: Serial)
-  : Promise<SubscriptionPopulated> {
+  private async getSubscription(serial: Serial): Promise<SubscriptionPopulated> {
     const subscriptions = await this.findBySerials([serial]);
     return subscriptions[0];
   }
 
-  async findBySerials(serials: Serial[])
-  : Promise<SubscriptionPopulated[]> {
+  async findBySerials(serials: Serial[]): Promise<SubscriptionPopulated[]> {
     return this.populatedSubscription
       .find({ serial: { $in: serials } })
       .populate('serial')
       .exec();
   }
 
-  async findByUser(user: User)
-  : Promise<SubscriptionPopulated[]> {
+  async findByUser(user: User): Promise<SubscriptionPopulated[]> {
     return this.populatedSubscription
       .find({ 'fans.user': user._id })
       .populate('serial')
       .exec();
   }
 
-  findFan(user: User, subs: SubscriptionPopulated): {
-    user: Schema.Types.ObjectId
-    voiceover: string[]
+  findFan(
+    user: User,
+    subs: SubscriptionPopulated,
+  ): {
+    user: Schema.Types.ObjectId;
+    voiceover: string[];
   } {
     return subs.fans.find((fan) => String(fan.user) == String(user._id));
   }
 
-  async addSubscription(user: User, serial: Serial)
-  : Promise<SubscriptionPopulated> {
+  async addSubscription(user: User, serial: Serial): Promise<SubscriptionPopulated> {
     if (user.payed === 0) {
       const subs = await this.findByUser(user);
       if (subs.length > MAX_FREE_SERIALS) {
@@ -76,8 +75,7 @@ export class SubscriptionService {
     return subscription;
   }
 
-  async removeSubscription(user: User, serial: Serial)
-  : Promise<void> {
+  async removeSubscription(user: User, serial: Serial): Promise<void> {
     const subscription = await this.getSubscription(serial);
     if (!subscription) {
       throw new SwatcherBadRequestException(user, serial.name);
@@ -92,14 +90,12 @@ export class SubscriptionService {
     await subscription.save();
   }
 
-  async clearSubscriptions(user: User)
-  : Promise<void> {
+  async clearSubscriptions(user: User): Promise<void> {
     const subscriptions = await this.findByUser(user);
 
-    for(const subscription of subscriptions) {
-      const index = subscription.fans
-        .findIndex((value) => value.user === user._id);
-      
+    for (const subscription of subscriptions) {
+      const index = subscription.fans.findIndex((value) => value.user === user._id);
+
       subscription.fans.splice(index, 1);
       await subscription.save();
     }

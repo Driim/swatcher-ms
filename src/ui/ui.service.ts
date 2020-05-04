@@ -14,7 +14,7 @@ import {
   COMMAND_SUBSCRIBE,
   COMMAND_VOICEOVER,
   COMMAND_ENOUTH_VOICEOVERS,
-  COMMAND_ANY_VOICEOVER
+  COMMAND_ANY_VOICEOVER,
 } from '../app.constants';
 import { MessageHander } from '../interfaces/message-handler.interface';
 import {
@@ -37,7 +37,7 @@ import {
   MESSAGE_SUBS_ALL,
   MESSAGE_SUBS_MESSAGE_PAYED,
   MESSAGE_SUBS_ENOUTH,
-  MESSAGE_VOICE_ADD
+  MESSAGE_VOICE_ADD,
 } from '../app.strings';
 import { Serial } from '../interfaces/serial.interface';
 import { SwatcherNothingFoundException, SwatcherBadRequestException } from '../exceptions';
@@ -60,7 +60,7 @@ export class UIService {
     private readonly client: ClientProxy,
     private readonly subscriptionService: SubscriptionService,
     private readonly serialService: SerialService,
-    private readonly contextService: ContextService
+    private readonly contextService: ContextService,
   ) {
     this.handlers = [
       {
@@ -93,44 +93,46 @@ export class UIService {
       },
       {
         handle: this.subscribe,
-        regexp: COMMAND_SUBSCRIBE
+        regexp: COMMAND_SUBSCRIBE,
       },
       {
         handle: this.addVoiceover,
-        regexp: COMMAND_VOICEOVER
+        regexp: COMMAND_VOICEOVER,
       },
       {
         handle: this.enouthVoiceovers,
-        regexp: COMMAND_ENOUTH_VOICEOVERS
+        regexp: COMMAND_ENOUTH_VOICEOVERS,
       },
       {
         handle: this.clearVoiceovers,
-        regexp: COMMAND_ANY_VOICEOVER
-      }
+        regexp: COMMAND_ANY_VOICEOVER,
+      },
     ];
   }
 
   private async sendPreviewAndGenerateKeyboard(
     user: User,
     pattern: string,
-    subscriptions: SubscriptionPopulated[]
+    subscriptions: SubscriptionPopulated[],
   ): Promise<any> {
     const keyboard = [];
 
-    for(const subs of subscriptions) {
+    for (const subs of subscriptions) {
       await this.sendSerialPreview(user, subs.serial);
       keyboard.push([`${pattern} ${subs.serial.name}`]);
     }
 
-     keyboard.push([MESSAGE_NO_THANKS]);
-     
-     return {
-       reply_markup: JSON.stringify({
-         keyboard,
-         one_time_keyboard: true,
-         resize_keyboard: true
-       })
-     }
+    keyboard.push([MESSAGE_NO_THANKS]);
+
+    /* eslint-disable @typescript-eslint/camelcase */
+    return {
+      reply_markup: JSON.stringify({
+        keyboard,
+        one_time_keyboard: true,
+        resize_keyboard: true,
+      }),
+    };
+    /* eslint-enable @typescript-eslint/camelcase */
   }
 
   public getHandlers(): MessageHander[] {
@@ -144,12 +146,10 @@ export class UIService {
     message += `${MESSAGE_SEND_GENRE}: ${serial.genre.join(', ')}`;
     message += `${MESSAGE_SEND_SEASONS}: ${serial.season.length}`;
 
-    const img = serial.season
-      .reduce((a, b) => parseInt(a.name) > parseInt(b.name) ? a : b)
-      .img;
+    const img = serial.season.reduce((a, b) => (parseInt(a.name) > parseInt(b.name) ? a : b)).img;
 
     const opts = {
-      caption: message
+      caption: message,
     };
 
     return this.client
@@ -176,15 +176,14 @@ export class UIService {
     this.logger.log(`Ищем ${message} для пользователя ${user.id}`);
 
     let subscriptions = await this.subscriptionService.findBySerials(serials);
-    let beforeLength = subscriptions.length;
+    const beforeLength = subscriptions.length;
     subscriptions = subscriptions
       .sort((a, b) => b.fans.length - a.fans.length)
       .slice(0, MAX_SEARCH_COUNT);
 
-    const opts = await this
-      .sendPreviewAndGenerateKeyboard(user, MESSAGE_ADD_SERIAL, subscriptions);
+    const opts = await this.sendPreviewAndGenerateKeyboard(user, MESSAGE_ADD_SERIAL, subscriptions);
 
-     return beforeLength === subscriptions.length
+    return beforeLength === subscriptions.length
       ? this.sendMessage(user, MESSAGE_FIND_ALL, opts)
       : this.sendMessage(user, MESSAGE_FIND_EXT(serials.length), opts);
   }
@@ -213,11 +212,14 @@ export class UIService {
     this.logger.log(`Отдаем список пользователю ${user.id}`);
     const subscriptions = await this.subscriptionService.findByUser(user);
 
-    const opts = await this
-      .sendPreviewAndGenerateKeyboard(user, MESSAGE_LIST_REMOVE, subscriptions);
+    const opts = await this.sendPreviewAndGenerateKeyboard(
+      user,
+      MESSAGE_LIST_REMOVE,
+      subscriptions,
+    );
 
     return this.sendMessage(user, MESSAGE_LIST_MESSAGE, opts);
-  }
+  };
 
   public unsubscribe = async (user: User, serialName: string): Promise<void> => {
     if (!serialName) {
@@ -230,10 +232,10 @@ export class UIService {
     }
 
     this.logger.log(`Удаляет подписку на ${serialName} пользователя ${user.id}`);
-    
+
     await this.subscriptionService.removeSubscription(user, serial);
     return this.sendMessage(user, MESSAGE_UNSUBSCRIBE(serialName), this.clearKeyboard);
-  }
+  };
 
   public subscribe = async (user: User, serialName: string): Promise<void> => {
     if (!serialName) {
@@ -244,7 +246,7 @@ export class UIService {
     if (!serial) {
       throw new SwatcherNothingFoundException(user, serialName);
     }
-    
+
     this.logger.log(`Добавляем подписку на сериал ${serialName} пользователю ${user.id}`);
     const subscription = await this.subscriptionService.addSubscription(user, serial);
 
@@ -256,20 +258,22 @@ export class UIService {
 
       subscription.serial.voiceover = subscription.serial.voiceover || [];
 
-      for(const voiceover of subscription.serial.voiceover) {
+      for (const voiceover of subscription.serial.voiceover) {
         keyboard.push([`${MESSAGE_SUBS_VOICEOVER} ${voiceover}`]);
       }
-      
+
       keyboard.push([MESSAGE_SUBS_ALL]);
       keyboard.push([MESSAGE_SUBS_ENOUTH]);
 
+      /* eslint-disable @typescript-eslint/camelcase */
       opts = {
         reply_markup: JSON.stringify({
           keyboard: keyboard,
           one_time_keyboard: true,
-          resize_keyboard: true
-        })
-      }
+          resize_keyboard: true,
+        }),
+      };
+      /* eslint-enable @typescript-eslint/camelcase */
 
       await this.contextService.createContext(user, subscription);
 
@@ -280,7 +284,7 @@ export class UIService {
     }
 
     return this.sendMessage(user, `${answer} ${subscription.serial.name}`, opts);
-  }
+  };
 
   public addVoiceover = async (user: User, voiceover: string): Promise<void> => {
     const context = await this.contextService.getContext(user);
@@ -304,39 +308,39 @@ export class UIService {
     }
 
     const serial = subscription.serial;
-    this.logger
-      .log(`Добавляем озвучку ${voiceover} на сериал ${serial.name} пользователю ${user.id}`);
+    this.logger.log(
+      `Добавляем озвучку ${voiceover} на сериал ${serial.name} пользователю ${user.id}`,
+    );
 
     await subscription.save();
 
-    const diff = subscription
-      .serial
-      .voiceover
-      .filter((voice) => !fan.voiceover.includes(voice));
+    const diff = subscription.serial.voiceover.filter((voice) => !fan.voiceover.includes(voice));
 
     const keyboard = [];
-    for(const voiceover of diff) {
+    for (const voiceover of diff) {
       keyboard.push([`${MESSAGE_SUBS_VOICEOVER} ${voiceover}`]);
     }
-    
+
     keyboard.push([MESSAGE_SUBS_ALL]);
     keyboard.push([MESSAGE_SUBS_ENOUTH]);
 
+    /* eslint-disable @typescript-eslint/camelcase */
     const opts = {
       reply_markup: JSON.stringify({
         keyboard,
         one_time_keyboard: true,
-        resize_keyboard: true
-      })
-    }
+        resize_keyboard: true,
+      }),
+    };
+    /* eslint-enable @typescript-eslint/camelcase */
 
     return this.sendMessage(user, `${MESSAGE_VOICE_ADD} ${voiceover}`, opts);
-  }
+  };
 
   public enouthVoiceovers = async (user: User, _message: string): Promise<void> => {
     await this.contextService.clearContext(user);
     return this.sendMessage(user, MESSAGE_OK, this.clearKeyboard);
-  }
+  };
 
   public clearVoiceovers = async (user: User, _message: string): Promise<void> => {
     const context = await this.contextService.getContext(user);
@@ -350,12 +354,11 @@ export class UIService {
     }
 
     const serial = context.subscription.serial;
-    this.logger
-      .log(`Очищаем подписку на озвучки пользователю ${user.id} на сериал ${serial.name}`);
+    this.logger.log(`Очищаем подписку на озвучки пользователю ${user.id} на сериал ${serial.name}`);
 
     fan.voiceover = [];
     await context.subscription.save();
 
     return this.sendMessage(user, MESSAGE_OK, this.clearKeyboard);
-  }
+  };
 }

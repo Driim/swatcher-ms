@@ -9,4 +9,7 @@ module.exports =  {
       ecmaVersion:  2017,  // Allows for the parsing of modern ECMAScript features
       sourceType:  'module',  // Allows for the use of imports
     },
+    env: {
+      node: true
+    }
   };

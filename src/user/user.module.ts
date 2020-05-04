@@ -16,7 +16,7 @@ import { SubscriptionModule } from '../subscription/subscription.module';
         options: { url: 'redis://localhost:6379' },
       },
     ]),
-    SubscriptionModule
+    SubscriptionModule,
   ],
   providers: [UserService],
   exports: [UserService],

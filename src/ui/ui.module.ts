@@ -20,7 +20,7 @@ import { ContextModule } from '../context/context.module';
     UserModule,
     SubscriptionModule,
     SerialModule,
-    ContextModule
+    ContextModule,
   ],
   providers: [UIService],
   controllers: [UIController],

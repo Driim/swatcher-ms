@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/camelcase */
 import { Test } from '@nestjs/testing';
 import { ClientsModule } from '@nestjs/microservices';
 import { Transport } from '@nestjs/common/enums/transport.enum';
@@ -11,7 +12,14 @@ import { UserService } from '../user/user.provider';
 import { User, Serial, SubscriptionPopulated } from '../interfaces';
 import { SwatcherNothingFoundException, SwatcherBadRequestException } from '../exceptions';
 import { SubscriptionService } from '../subscription/subscription.provider';
-import { MESSAGE_FIND_ALL, MESSAGE_SUBS_MESSAGE, MESSAGE_SUBS_MESSAGE_PAYED, MESSAGE_SUBS_VOICEOVER, MESSAGE_SUBS_ALL, MESSAGE_SUBS_ENOUTH } from '../app.strings';
+import {
+  MESSAGE_FIND_ALL,
+  MESSAGE_SUBS_MESSAGE,
+  MESSAGE_SUBS_MESSAGE_PAYED,
+  MESSAGE_SUBS_VOICEOVER,
+  MESSAGE_SUBS_ALL,
+  MESSAGE_SUBS_ENOUTH,
+} from '../app.strings';
 import { ContextService } from '../context/context.provider';
 import { ContextPopulated } from '../interfaces/context.interface';
 
@@ -26,7 +34,7 @@ describe('Swatcher UI', () => {
   let serialModel: Model<Serial>;
   let contextModel: Model<ContextPopulated>;
   let subscriptionModel: Model<SubscriptionPopulated>;
-  
+
   let defaultUser: User;
   let defaultSerial: Serial;
   const TESTING_NAME = 'Testing';
@@ -49,8 +57,8 @@ describe('Swatcher UI', () => {
             useFindAndModify: false,
           }),
         }),
-        UIModule
-      ]
+        UIModule,
+      ],
     }).compile();
 
     uiService = app.get<UIService>(UIService);
@@ -77,25 +85,25 @@ describe('Swatcher UI', () => {
     defaultSerial.voiceover = [];
     defaultSerial.season = [];
     defaultSerial = await defaultSerial.save();
-  })
+  });
 
   afterEach(async () => {
     jest.restoreAllMocks();
     await subscriptionModel.deleteMany({});
     await userModel.deleteMany({});
     await serialModel.deleteMany({});
-  })
+  });
 
   afterAll(async () => {
     /** cleanup and exit */
-  })
+  });
 
   describe('find serial', () => {
     it('should throw error if nothing was found', async () => {
       jest.spyOn(serialService, 'find').mockResolvedValue([]);
-      await expect(uiService.find(defaultUser, 'test message'))
-        .rejects
-        .toThrowError(SwatcherNothingFoundException);
+      await expect(uiService.find(defaultUser, 'test message')).rejects.toThrowError(
+        SwatcherNothingFoundException,
+      );
     });
 
     // TODO: this test
@@ -115,7 +123,10 @@ describe('Swatcher UI', () => {
       // removing subscription
       await subscriptionService.removeSubscription(defaultUser, defaultSerial);
 
-      const opts = {"reply_markup": "{\"keyboard\":[[\"Добавить Testing\"],[\"Нет, не надо\"]],\"one_time_keyboard\":true,\"resize_keyboard\":true}"};
+      const opts = {
+        reply_markup:
+          '{"keyboard":[["Добавить Testing"],["Нет, не надо"]],"one_time_keyboard":true,"resize_keyboard":true}',
+      };
 
       expect(uiService.sendMessage).toBeCalledWith(defaultUser, MESSAGE_FIND_ALL, opts);
       const serial = mock.mock.calls[0][1];
@@ -127,19 +138,19 @@ describe('Swatcher UI', () => {
     it('should throw error if serial not found', async () => {
       jest.spyOn(serialService, 'findExact').mockResolvedValue(null);
 
-      await expect(uiService.unsubscribe(defaultUser, TESTING_NAME))
-        .rejects
-        .toThrowError(SwatcherNothingFoundException);
+      await expect(uiService.unsubscribe(defaultUser, TESTING_NAME)).rejects.toThrowError(
+        SwatcherNothingFoundException,
+      );
     });
   });
 
   describe('subscribe user', () => {
-    it('should throw error if can\'t find exact match', async () => {
+    it("should throw error if can't find exact match", async () => {
       jest.spyOn(serialService, 'findExact').mockResolvedValue(null);
 
-      await expect(uiService.subscribe(defaultUser, TESTING_NAME))
-        .rejects
-        .toThrowError(SwatcherNothingFoundException);
+      await expect(uiService.subscribe(defaultUser, TESTING_NAME)).rejects.toThrowError(
+        SwatcherNothingFoundException,
+      );
     });
 
     it('should send simple message for basic user', async () => {
@@ -157,7 +168,7 @@ describe('Swatcher UI', () => {
       expect(uiService.sendMessage).toBeCalledWith(
         defaultUser,
         `${MESSAGE_SUBS_MESSAGE} ${TESTING_NAME}`,
-        clearKeyboard
+        clearKeyboard,
       );
     });
 
@@ -185,12 +196,12 @@ describe('Swatcher UI', () => {
             [`${MESSAGE_SUBS_VOICEOVER} one`],
             [`${MESSAGE_SUBS_VOICEOVER} two`],
             [MESSAGE_SUBS_ALL],
-            [MESSAGE_SUBS_ENOUTH]
+            [MESSAGE_SUBS_ENOUTH],
           ],
           one_time_keyboard: true,
-          resize_keyboard: true
-        })
-      }
+          resize_keyboard: true,
+        }),
+      };
       expect(args[2]).toStrictEqual(opts);
     });
   });
@@ -198,9 +209,9 @@ describe('Swatcher UI', () => {
   describe('add voiceover', () => {
     it('should throw error if no context', async () => {
       jest.spyOn(contextService, 'getContext').mockResolvedValue(null);
-      await expect(uiService.addVoiceover(defaultUser, 'one'))
-        .rejects
-        .toThrowError(SwatcherBadRequestException);
+      await expect(uiService.addVoiceover(defaultUser, 'one')).rejects.toThrowError(
+        SwatcherBadRequestException,
+      );
     });
 
     it('should throw error if fan not subscribed', async () => {
@@ -212,9 +223,9 @@ describe('Swatcher UI', () => {
 
       jest.spyOn(contextService, 'getContext').mockResolvedValue(context);
 
-      await expect(uiService.addVoiceover(defaultUser, 'one'))
-        .rejects
-        .toThrowError(SwatcherBadRequestException);
+      await expect(uiService.addVoiceover(defaultUser, 'one')).rejects.toThrowError(
+        SwatcherBadRequestException,
+      );
     });
 
     it('should not add voiceover subs if already', async () => {
@@ -228,13 +239,13 @@ describe('Swatcher UI', () => {
       await defaultSerial.save();
 
       await uiService.subscribe(user, TESTING_NAME);
-      let [ subs ] = await subscriptionService.findByUser(user);
+      let [subs] = await subscriptionService.findByUser(user);
       subs.fans[0].voiceover = ['one'];
       await subs.save();
 
       await uiService.addVoiceover(user, 'one'); /** same voiceover */
 
-      [ subs ] = await subscriptionService.findByUser(user); 
+      [subs] = await subscriptionService.findByUser(user);
       expect(subs.fans.length).toBe(1);
 
       const resultingOpts = sendMessage.mock.calls[1][2];
@@ -244,11 +255,11 @@ describe('Swatcher UI', () => {
             [`${MESSAGE_SUBS_VOICEOVER} two`],
             [`${MESSAGE_SUBS_VOICEOVER} three`],
             [MESSAGE_SUBS_ALL],
-            [MESSAGE_SUBS_ENOUTH]
+            [MESSAGE_SUBS_ENOUTH],
           ],
           one_time_keyboard: true,
-          resize_keyboard: true
-        })
+          resize_keyboard: true,
+        }),
       };
 
       expect(resultingOpts).toStrictEqual(opts);
@@ -267,7 +278,7 @@ describe('Swatcher UI', () => {
 
       await uiService.addVoiceover(user, 'one');
 
-      const [ subs ] = await subscriptionService.findByUser(user); 
+      const [subs] = await subscriptionService.findByUser(user);
       expect(subs.fans.length).toBe(1);
       expect(subs.fans[0].voiceover.length).toBe(1);
     });
@@ -277,9 +288,9 @@ describe('Swatcher UI', () => {
     it('should throw error if no context', async () => {
       jest.spyOn(contextService, 'getContext').mockResolvedValue(null);
 
-      await expect(uiService.clearVoiceovers(defaultUser, ''))
-        .rejects
-        .toThrowError(SwatcherBadRequestException);
+      await expect(uiService.clearVoiceovers(defaultUser, '')).rejects.toThrowError(
+        SwatcherBadRequestException,
+      );
     });
 
     it('should throw error if no fan', async () => {
@@ -291,9 +302,9 @@ describe('Swatcher UI', () => {
 
       jest.spyOn(contextService, 'getContext').mockResolvedValue(context);
 
-      await expect(uiService.clearVoiceovers(defaultUser, ''))
-        .rejects
-        .toThrowError(SwatcherBadRequestException);
+      await expect(uiService.clearVoiceovers(defaultUser, '')).rejects.toThrowError(
+        SwatcherBadRequestException,
+      );
     });
 
     it('should clear user voiceover subscription', async () => {
@@ -310,7 +321,7 @@ describe('Swatcher UI', () => {
 
       await uiService.clearVoiceovers(user, undefined);
 
-      const [ subs ] = await subscriptionService.findByUser(user);
+      const [subs] = await subscriptionService.findByUser(user);
       expect(subs.fans.length).toBe(1);
       expect(subs.fans[0].voiceover.length).toBe(0);
     });
