@@ -141,6 +141,6 @@ describe('Serial Service', () => {
   });
 
   afterAll(async () => {
-    await model.remove({}).exec();
+    await model.deleteMany({}).exec();
   });
 });
