@@ -3,8 +3,6 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Schema } from 'mongoose';
 import * as Fuse from 'fuse.js';
 import { Serial } from '../interfaces';
-import { DuplicateSerialException } from '../exceptions';
-import { SerialDto } from '../dto/serial.dto';
 import {
   FUZZY_SORT,
   FUZZY_THRESHOLD,
@@ -69,32 +67,5 @@ export class SerialService {
     const ids = notExactMatch.map((serial) => serial._id.toString());
 
     return this.findByIds(ids);
-  }
-
-  /* TODO: every function using this must catch DuplicateSerialException */
-  async save(dto: SerialDto): Promise<Serial> {
-    const existing = await this.serial.find({ name: dto.name, country: dto.country });
-
-    if (existing.length === 0) {
-      this.logger.log(`В базе данных нет сериала ${dto.name}, создаем...`);
-      const serial = new this.serial(dto);
-      return serial.save();
-    } else if (existing.length === 1) {
-      const result = existing[0];
-
-      /* FIXME: need to find diff of 2 arrays by season name and/or url */
-      const duplicate = result.season.find((elem) => {
-        return elem.url === dto.season[0].url;
-      });
-
-      if (!duplicate) {
-        this.logger.log(`Сериал ${dto.name} есть, а ${dto.season[0].name} нет. Добавляем...`);
-        result.season.push(dto.season[0]);
-      }
-
-      return result.save();
-    } else {
-      throw new DuplicateSerialException(dto);
-    }
   }
 }

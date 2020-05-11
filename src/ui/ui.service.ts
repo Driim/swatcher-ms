@@ -45,6 +45,7 @@ import { SubscriptionService } from '../subscription/subscription.provider';
 import { SerialService } from '../serial/serial.provider';
 import { SubscriptionPopulated } from '../interfaces';
 import { ContextService } from '../context/context.provider';
+import { UserService } from '../user/user.provider';
 
 @Injectable()
 export class UIService {
@@ -61,6 +62,7 @@ export class UIService {
     private readonly subscriptionService: SubscriptionService,
     private readonly serialService: SerialService,
     private readonly contextService: ContextService,
+    private readonly userService: UserService
   ) {
     this.handlers = [
       {
@@ -190,9 +192,8 @@ export class UIService {
 
   public remove = async (user: User, _message: string): Promise<void> => {
     this.logger.log(`Удаляем пользователя ${user.id}`);
-    this.sendMessage(user, MESSAGE_REMOVE_USER);
-    // TODO: use user service for this
-    return this.client.emit<void>('user_block', user.id).toPromise();
+    await this.userService.block(user.id);
+    return this.sendMessage(user, MESSAGE_REMOVE_USER);
   };
 
   public help = async (user: User, _message: string): Promise<void> => {

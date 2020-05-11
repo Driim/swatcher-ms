@@ -3,12 +3,9 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
 import { SerialService } from './serial.provider';
 import { TRANSPORT_SERVICE } from '../app.constants';
 import { Serial } from '../interfaces/serial.interface';
-import { SerialDto } from '../dto/serial.dto';
-import { DuplicateSerialException } from '../exceptions/duplicate-serial.exception';
 import { MongooseModule, getModelToken } from '@nestjs/mongoose';
 import { SerialModule } from './serial.module';
 import { Model } from 'mongoose';
-import { ObjectID } from 'mongodb';
 import { SerialName } from '../app.constants';
 
 const TESTING_NAME = 'Testing';
@@ -16,9 +13,10 @@ const TESTING_NAME = 'Testing';
 describe('Serial Service', () => {
   let service: SerialService;
   let model: Model<Serial>;
+  let app: TestingModule;
 
   beforeAll(async () => {
-    const app: TestingModule = await Test.createTestingModule({
+    app = await Test.createTestingModule({
       imports: [
         ClientsModule.register([
           {
@@ -76,71 +74,8 @@ describe('Serial Service', () => {
     });
   });
 
-  describe('save', () => {
-    const SERIAL_NAME = 'Serial';
-    let serialId: ObjectID;
-
-    it('should create new serial', async () => {
-      const serial = new SerialDto();
-      serial.name = SERIAL_NAME;
-      serial.alias = ['Alias'];
-      serial.country = ['Russia'];
-      serial.director = [];
-      serial.genre = [];
-      serial.voiceover = [];
-      serial.season = [];
-
-      const result = await service.save(serial);
-
-      expect(result.name).toBe(SERIAL_NAME);
-      expect(result.id).toBeDefined();
-      serialId = result.id;
-    });
-
-    it('should update existing serial', async () => {
-      const serial = new SerialDto();
-      serial.name = SERIAL_NAME;
-      serial.alias = ['Alias'];
-      serial.country = ['Russia'];
-      serial.director = [];
-      serial.genre = [];
-      serial.voiceover = [];
-      serial.season = [
-        {
-          name: '1 сезон',
-          starts: 2020,
-          url: 'test.ru',
-          desc: '',
-          img: '',
-          actors: [''],
-        },
-      ];
-
-      const result = await service.save(serial);
-      expect(result.id).toStrictEqual(serialId);
-    });
-
-    it('should throw expection if find more then 1 serial', async () => {
-      const serial = new model();
-      serial.name = SERIAL_NAME;
-      serial.alias = ['Alias'];
-      serial.country = ['Russia'];
-      serial.director = [];
-      serial.genre = [];
-      serial.voiceover = [];
-      serial.season = [];
-      const duplicate = await serial.save();
-      expect(duplicate.id).not.toStrictEqual(serialId);
-
-      try {
-        await service.save(serial);
-      } catch (e) {
-        expect(e).toBeInstanceOf(DuplicateSerialException);
-      }
-    });
-  });
-
   afterAll(async () => {
     await model.deleteMany({}).exec();
+    app.close();
   });
 });

@@ -1,10 +1,8 @@
 /* eslint-disable @typescript-eslint/camelcase */
-import { Test } from '@nestjs/testing';
-import { ClientsModule } from '@nestjs/microservices';
-import { Transport } from '@nestjs/common/enums/transport.enum';
+import { Test, TestingModule } from '@nestjs/testing';
 import { MongooseModule, getModelToken } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { TRANSPORT_SERVICE, UserName, SerialName, UserContext, SubsName } from '../app.constants';
+import { UserName, SerialName, UserContext, SubsName } from '../app.constants';
 import { UIModule } from './ui.module';
 import { UIService } from './ui.service';
 import { SerialService } from '../serial/serial.provider';
@@ -22,6 +20,7 @@ import {
 } from '../app.strings';
 import { ContextService } from '../context/context.provider';
 import { ContextPopulated } from '../interfaces/context.interface';
+import { ConfigModule } from '@nestjs/config';
 
 describe('Swatcher UI', () => {
   let uiService: UIService;
@@ -39,16 +38,12 @@ describe('Swatcher UI', () => {
   let defaultSerial: Serial;
   const TESTING_NAME = 'Testing';
 
+  let app: TestingModule;
+
   beforeAll(async () => {
-    const app = await Test.createTestingModule({
+    app = await Test.createTestingModule({
       imports: [
-        ClientsModule.register([
-          {
-            name: TRANSPORT_SERVICE,
-            transport: Transport.REDIS,
-            options: { url: 'redis://localhost:6379' },
-          },
-        ]),
+        ConfigModule.forRoot({ isGlobal: true }),
         MongooseModule.forRootAsync({
           useFactory: async () => ({
             uri: 'mongodb://localhost:27017/swatcher_test',
@@ -96,6 +91,7 @@ describe('Swatcher UI', () => {
 
   afterAll(async () => {
     /** cleanup and exit */
+    app.close();
   });
 
   describe('find serial', () => {

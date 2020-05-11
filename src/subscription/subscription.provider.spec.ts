@@ -1,9 +1,8 @@
 /* eslint-env node, jest */
 import { Model } from 'mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
-import { ClientsModule, Transport } from '@nestjs/microservices';
 import { MongooseModule, getModelToken } from '@nestjs/mongoose';
-import { TRANSPORT_SERVICE, SubsName, SerialName, UserName } from '../app.constants';
+import { SubsName, SerialName, UserName } from '../app.constants';
 import { Serial } from '../interfaces/serial.interface';
 import { SubscriptionService } from './subscription.provider';
 import { Subscription, SubscriptionPopulated } from '../interfaces/subscription.interface';
@@ -14,6 +13,7 @@ import { UserModule } from '../user/user.module';
 import { UserService } from '../user/user.provider';
 import { SwatcherLimitExceedException, SwatcherBadRequestException } from '../exceptions';
 import { User } from '../interfaces';
+import { ConfigModule } from '@nestjs/config';
 
 describe('Serial Service', () => {
   let subsService: SubscriptionService;
@@ -27,17 +27,12 @@ describe('Serial Service', () => {
 
   const TESTING_NAME = 'Testing';
 
+  let app: TestingModule;
+
   beforeAll(async () => {
-    const app: TestingModule = await Test.createTestingModule({
+    app = await Test.createTestingModule({
       imports: [
-        // It's here because subscription module uses UserModule
-        ClientsModule.register([
-          {
-            name: TRANSPORT_SERVICE,
-            transport: Transport.REDIS,
-            options: { url: 'redis://localhost:6379' },
-          },
-        ]),
+        ConfigModule.forRoot({ isGlobal: true }),
         MongooseModule.forRootAsync({
           useFactory: async () => ({
             uri: 'mongodb://localhost:27017/swatcher_test',
@@ -79,6 +74,7 @@ describe('Serial Service', () => {
 
   afterAll(async () => {
     await serialModel.deleteMany({}).exec();
+    app.close();
   });
 
   describe('findBySerials', () => {

@@ -20,14 +20,14 @@ import { RedisOptions } from '@nestjs/common/interfaces/microservices/microservi
         const options: RedisOptions = {
           transport: Transport.REDIS,
           options: {
-            url: config.get<string>('REDIS_URI')
-          }
-        }
+            url: config.get<string>('REDIS_URI'),
+          },
+        };
         return ClientProxyFactory.create(options);
       },
-      inject: [ConfigService]
+      inject: [ConfigService],
     },
-    UserService
+    UserService,
   ],
   exports: [UserService],
 })
