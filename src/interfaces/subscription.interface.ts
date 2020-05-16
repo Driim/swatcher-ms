@@ -1,17 +1,18 @@
-import { Document, Schema } from 'mongoose';
+import { Document, Schema, Types } from 'mongoose';
 import { Serial } from './serial.interface';
+import { User } from './user.interface';
+
+export interface FanInterface {
+  user: Types.ObjectId | User;
+  voiceover: string[];
+}
 
 interface SubscriptionBase extends Document {
-  fans: [
-    {
-      user: Schema.Types.ObjectId;
-      voiceover: string[];
-    },
-  ];
+  fans: FanInterface[];
 }
 
 export interface Subscription extends SubscriptionBase {
-  serial: Serial['_id'];
+  serial: Types.ObjectId;
 }
 
 export interface SubscriptionPopulated extends SubscriptionBase {

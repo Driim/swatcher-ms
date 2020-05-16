@@ -1,5 +1,5 @@
 /* eslint-env node, jest */
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
 import { MongooseModule, getModelToken } from '@nestjs/mongoose';
 import { SubsName, SerialName, UserName } from '../app.constants';
@@ -80,7 +80,7 @@ describe('Serial Service', () => {
   describe('findBySerials', () => {
     it('should find subscriptions', async () => {
       const subscription = new subscriptionModel();
-      subscription.serial = serial._id;
+      subscription.serial = new Types.ObjectId(String(serial._id));
       await subscription.save();
 
       const serials = await serialService.find(TESTING_NAME);
@@ -95,7 +95,7 @@ describe('Serial Service', () => {
     it('should find subscriptions', async () => {
       const user = await userService.create(1, 'user');
       const subscription = new subscriptionModel();
-      subscription.serial = serial._id;
+      subscription.serial = new Types.ObjectId(String(serial._id));
       subscription.fans.push({
         user: user._id,
         voiceover: [],
@@ -181,6 +181,26 @@ describe('Serial Service', () => {
       const subs = await subsService.findBySerials([serial]);
       expect(subs.length).toBe(1);
       expect(subs[0].fans.length).toBe(0);
+    });
+  });
+
+  describe('get subscribers', () => {
+    it('should return empty array if no subscribers', async () => {
+      const fans = await subsService.getSubscribers(String(serial._id));
+
+      expect(Array.isArray(fans)).toBeTruthy();
+      expect(fans.length).toBe(0);
+    });
+
+    it('should return array with populated users', async () => {
+      const user = await userService.create(2, 'test');
+      const subs = await subsService.addSubscription(user, serial);
+
+      const fans = await subsService.getSubscribers(String(serial._id));
+
+      expect(Array.isArray(fans)).toBeTruthy();
+      expect(fans.length).toBe(1);
+      expect((fans[0].user as User).id).toBe(user.id);
     });
   });
 });

@@ -8,21 +8,26 @@ import { UserService } from '../user/user.provider';
 import { UIService } from './ui.service';
 import { COMMAND_START } from '../app.constants';
 import { SwatcherExceptionsFilter, UnhandledExceptionsFilter } from '../filters';
+import { AnnounceDto } from '../dto/announce.dto';
 
 @Controller()
+@UsePipes(ValidationPipe)
+@UseFilters(UnhandledExceptionsFilter, SwatcherExceptionsFilter)
 export class UIController {
   private readonly logger = new Logger(UIController.name);
 
   constructor(private readonly userService: UserService, private readonly uiService: UIService) {}
 
-  @UsePipes(ValidationPipe)
-  @UseFilters(UnhandledExceptionsFilter, SwatcherExceptionsFilter)
+  @EventPattern('received_announce')
+  async receivedAnnounce(@Payload() data: AnnounceDto): Promise<void> {
+    this.logger.log(data);
+    return this.uiService.receivedAnnounce(data);
+  }
+
   @EventPattern('received_message')
   async receivedMessage(@Payload() data: TelegramMessageDto): Promise<void> {
     const user = await this.userService.find(data.id);
     const text = escapeString(data.message);
-
-    console.log(user);
 
     if (!user) {
       /* The only command working without registration */

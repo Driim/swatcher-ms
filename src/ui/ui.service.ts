@@ -46,6 +46,7 @@ import { SerialService } from '../serial/serial.provider';
 import { SubscriptionPopulated } from '../interfaces';
 import { ContextService } from '../context/context.provider';
 import { UserService } from '../user/user.provider';
+import { AnnounceDto } from '../dto/announce.dto';
 
 @Injectable()
 export class UIService {
@@ -62,7 +63,7 @@ export class UIService {
     private readonly subscriptionService: SubscriptionService,
     private readonly serialService: SerialService,
     private readonly contextService: ContextService,
-    private readonly userService: UserService
+    private readonly userService: UserService,
   ) {
     this.handlers = [
       {
@@ -362,4 +363,37 @@ export class UIService {
 
     return this.sendMessage(user, MESSAGE_OK, this.clearKeyboard);
   };
+
+  async receivedAnnounce(data: AnnounceDto): Promise<void> {
+    // console.log(data);
+    let fans = await this.subscriptionService.getSubscribers(data.id);
+
+    fans = fans.filter((fan) => {
+      if (fan.voiceover.length == 0) {
+        // all voiceovers
+        return true;
+      }
+
+      // TODO: make lowercase all voiceovers
+      return fan.voiceover.includes(data.voiceover) ? true : false;
+    });
+
+    // send messages
+    const reg = /(субтитры)/i;
+    let message = `${data.series} ${data.season}а ${data.name} `;
+
+    if (data.voiceover != undefined && data.voiceover !== '') {
+      if (reg.exec(data.voiceover)) {
+        message += 'с субтитрами';
+      } else {
+        message += `в озвучке ${data.voiceover}`;
+      }
+    }
+
+    message += '\n';
+
+    for (const fan of fans) {
+      await this.sendMessage(fan.user as User, message, this.clearKeyboard);
+    }
+  }
 }

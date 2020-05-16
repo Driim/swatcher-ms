@@ -21,6 +21,7 @@ import {
 import { ContextService } from '../context/context.provider';
 import { ContextPopulated } from '../interfaces/context.interface';
 import { ConfigModule } from '@nestjs/config';
+import { AnnounceDto } from '../dto/announce.dto';
 
 describe('Swatcher UI', () => {
   let uiService: UIService;
@@ -320,6 +321,78 @@ describe('Swatcher UI', () => {
       const [subs] = await subscriptionService.findByUser(user);
       expect(subs.fans.length).toBe(1);
       expect(subs.fans[0].voiceover.length).toBe(0);
+    });
+  });
+
+  describe('received announce', () => {
+    let defaultDto;
+
+    beforeEach(() => {
+      defaultDto = new AnnounceDto();
+      defaultDto.id = String(defaultSerial._id);
+      defaultDto.name = TESTING_NAME;
+      defaultDto.season = '1 сезон';
+      defaultDto.series = '1 серия';
+    });
+
+    it('should not send message if their no subscribers', async () => {
+      jest.spyOn(uiService, 'sendMessage').mockResolvedValue();
+
+      await uiService.subscribe(defaultUser, TESTING_NAME);
+      await uiService.unsubscribe(defaultUser, TESTING_NAME);
+
+      await uiService.receivedAnnounce(defaultDto);
+
+      /** one time subscribe, one time unsubscribe */
+      expect(uiService.sendMessage).toBeCalledTimes(2);
+    });
+
+    it('should not send message if user not subscribed to this voiceover', async () => {
+      jest.spyOn(uiService, 'sendMessage').mockResolvedValue();
+
+      defaultUser.payed = 1;
+      await defaultUser.save();
+
+      await uiService.subscribe(defaultUser, TESTING_NAME);
+      await uiService.addVoiceover(defaultUser, 'lostfilm');
+      await uiService.enouthVoiceovers(defaultUser, '');
+
+      defaultDto.voiceover = 'coldfilm';
+
+      await uiService.receivedAnnounce(defaultDto);
+
+      /** 3 not 4 */
+      expect(uiService.sendMessage).toBeCalledTimes(3);
+    });
+
+    it('should send message to subscribed for this voiceover user', async () => {
+      const mock = jest.spyOn(uiService, 'sendMessage').mockResolvedValue();
+
+      defaultUser.payed = 1;
+      await defaultUser.save();
+
+      await uiService.subscribe(defaultUser, TESTING_NAME);
+      await uiService.addVoiceover(defaultUser, 'lostfilm');
+      await uiService.enouthVoiceovers(defaultUser, '');
+
+      defaultDto.voiceover = 'lostfilm';
+      await uiService.receivedAnnounce(defaultDto);
+
+      expect(mock.mock.calls[3][1]).toMatch(
+        `1 серия 1 сезона ${TESTING_NAME} в озвучке lostfilm`,
+      );
+    });
+
+    it('should send message to user subscribed to all voiceovers', async () => {
+      const mock = jest.spyOn(uiService, 'sendMessage').mockResolvedValue();
+
+      await uiService.subscribe(defaultUser, TESTING_NAME);
+
+      defaultDto.voiceover = 'lostfilm';
+
+      await uiService.receivedAnnounce(defaultDto);
+
+      expect(mock.mock.calls[1][1]).toMatch(`1 серия 1 сезона ${TESTING_NAME} в озвучке lostfilm`);
     });
   });
 });

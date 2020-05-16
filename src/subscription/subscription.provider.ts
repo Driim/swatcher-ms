@@ -1,8 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Schema } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { SubsName, MAX_FREE_SERIALS } from '../app.constants';
-import { Serial, SubscriptionPopulated, User, Subscription } from '../interfaces';
+import { Serial, SubscriptionPopulated, User, Subscription, FanInterface } from '../interfaces';
 import { SwatcherBadRequestException, SwatcherLimitExceedException } from '../exceptions';
 
 @Injectable()
@@ -35,13 +35,7 @@ export class SubscriptionService {
       .exec();
   }
 
-  findFan(
-    user: User,
-    subs: SubscriptionPopulated,
-  ): {
-    user: Schema.Types.ObjectId;
-    voiceover: string[];
-  } {
+  findFan(user: User, subs: SubscriptionPopulated): FanInterface {
     return subs.fans.find((fan) => String(fan.user) == String(user._id));
   }
 
@@ -58,7 +52,7 @@ export class SubscriptionService {
     if (!subscription) {
       // create new subscription
       const subs = new this.subscription();
-      subs.serial = serial._id;
+      subs.serial = new Types.ObjectId(String(serial._id));
       await subs.save();
 
       // to populate serial
@@ -99,5 +93,18 @@ export class SubscriptionService {
       subscription.fans.splice(index, 1);
       await subscription.save();
     }
+  }
+
+  async getSubscribers(id: string): Promise<FanInterface[]> {
+    const subs = await this.subscription
+      .findOne({ serial: id })
+      .populate('fans.user')
+      .exec();
+
+    if (!subs) {
+      return [];
+    }
+
+    return subs.fans;
   }
 }

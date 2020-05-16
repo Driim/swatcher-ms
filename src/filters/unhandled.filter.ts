@@ -12,7 +12,7 @@ export class UnhandledExceptionsFilter implements ExceptionFilter {
     const error: SwatcherError = {
       user: 0,
       error: exception.toString(),
-      type: 'UMS:unhandled'
+      type: 'UMS:unhandled',
     };
 
     this.logger.error(`Поймал необработонную ошибку: ${exception.toString()}`);
