@@ -28,18 +28,19 @@
     "@nestjs/mongoose": "^6.4.0",
     "@nestjs/platform-express": "^6.11.11",
     "@nestjs/schedule": "^0.4.0",
-    "@types/mongoose": "^5.7.32",
+    "@ntegral/nestjs-sentry": "^1.0.3",
+    "@types/mongoose": "^5.7.34",
     "class-transformer": "^0.2.3",
     "class-validator": "^0.11.1",
     "escape-string-regexp": "^2.0.0",
     "fuse.js": "^3.6.1",
-    "mongodb": "^3.5.9",
-    "mongoose": "^5.9.25",
+    "mongodb": "^3.6.0",
+    "mongoose": "^5.9.27",
     "mongoose-autopopulate": "^0.12.2",
     "redis": "^3.0.2",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
-    "rxjs": "^6.6.0"
+    "rxjs": "^6.6.2"
   },
   "devDependencies": {
     "@nestjs/cli": "^7.4.1",

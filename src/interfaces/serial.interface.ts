@@ -10,7 +10,7 @@ class Season {
 }
 
 export interface Serial extends Document {
-  _id: Schema.Types.ObjectId;
+  _id: Schema.Types.ObjectId | string;
   name: string;
   alias: string[];
   genre: string[];

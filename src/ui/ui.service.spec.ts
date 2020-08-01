@@ -1,6 +1,8 @@
 /* eslint-disable @typescript-eslint/camelcase */
 import { Test, TestingModule } from '@nestjs/testing';
 import { MongooseModule, getModelToken } from '@nestjs/mongoose';
+import { SentryModule } from '@ntegral/nestjs-sentry';
+import { LogLevel } from '@sentry/types';
 import { Model } from 'mongoose';
 import { UserName, SerialName, UserContext, SubsName } from '../app.constants';
 import { UIModule } from './ui.module';
@@ -20,7 +22,7 @@ import {
 } from '../app.strings';
 import { ContextService } from '../context/context.provider';
 import { ContextPopulated } from '../interfaces/context.interface';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AnnounceDto } from '../dto/announce.dto';
 
 describe('Swatcher UI', () => {
@@ -52,6 +54,17 @@ describe('Swatcher UI', () => {
             useUnifiedTopology: true,
             useFindAndModify: false,
           }),
+        }),
+        SentryModule.forRootAsync({
+          imports: [ConfigModule],
+          useFactory: async (cfg: ConfigService) => ({
+            dsn: cfg.get('SENTRY_DSN'),
+            debug: true,
+            environment: 'production',
+            release: null, // must create a release in sentry.io dashboard
+            logLevel: LogLevel.Debug, //based on sentry.io loglevel //
+          }),
+          inject: [ConfigService],
         }),
         UIModule,
       ],
@@ -121,8 +134,12 @@ describe('Swatcher UI', () => {
       await subscriptionService.removeSubscription(defaultUser, defaultSerial);
 
       const opts = {
-        reply_markup:
-          '{"keyboard":[["Добавить Testing"],["Нет, не надо"]],"one_time_keyboard":true,"resize_keyboard":true}',
+        keyboard: [
+          ['Добавить Testing'],
+          ['Нет, не надо']
+        ],
+        oneTimeKeyboard: true,
+        resizeKeyboard: true
       };
 
       expect(uiService.sendMessage).toBeCalledWith(defaultUser, MESSAGE_FIND_ALL, opts);
@@ -151,11 +168,6 @@ describe('Swatcher UI', () => {
     });
 
     it('should send simple message for basic user', async () => {
-      const clearKeyboard = {
-        // eslint-disable-next-line @typescript-eslint/camelcase
-        reply_markup: JSON.stringify({ remove_keyboard: true }),
-      };
-
       jest.spyOn(uiService, 'sendMessage').mockResolvedValue();
       jest.spyOn(contextService, 'createContext').mockResolvedValue();
 
@@ -165,7 +177,10 @@ describe('Swatcher UI', () => {
       expect(uiService.sendMessage).toBeCalledWith(
         defaultUser,
         `${MESSAGE_SUBS_MESSAGE} ${TESTING_NAME}`,
-        clearKeyboard,
+        {
+          keyboard: [],
+          removeKeyboard: true
+        },
       );
     });
 
@@ -188,16 +203,14 @@ describe('Swatcher UI', () => {
       expect(args[1]).toBe(`${MESSAGE_SUBS_MESSAGE_PAYED} ${TESTING_NAME}`);
 
       const opts = {
-        reply_markup: JSON.stringify({
-          keyboard: [
-            [`${MESSAGE_SUBS_VOICEOVER} one`],
-            [`${MESSAGE_SUBS_VOICEOVER} two`],
-            [MESSAGE_SUBS_ALL],
-            [MESSAGE_SUBS_ENOUTH],
-          ],
-          one_time_keyboard: true,
-          resize_keyboard: true,
-        }),
+        keyboard: [
+          [`${MESSAGE_SUBS_VOICEOVER} one`],
+          [`${MESSAGE_SUBS_VOICEOVER} two`],
+          [MESSAGE_SUBS_ALL],
+          [MESSAGE_SUBS_ENOUTH],
+        ],
+        oneTimeKeyboard: true,
+        resizeKeyboard: true,
       };
       expect(args[2]).toStrictEqual(opts);
     });
@@ -247,16 +260,14 @@ describe('Swatcher UI', () => {
 
       const resultingOpts = sendMessage.mock.calls[1][2];
       const opts = {
-        reply_markup: JSON.stringify({
-          keyboard: [
-            [`${MESSAGE_SUBS_VOICEOVER} two`],
-            [`${MESSAGE_SUBS_VOICEOVER} three`],
-            [MESSAGE_SUBS_ALL],
-            [MESSAGE_SUBS_ENOUTH],
-          ],
-          one_time_keyboard: true,
-          resize_keyboard: true,
-        }),
+        keyboard: [
+          [`${MESSAGE_SUBS_VOICEOVER} two`],
+          [`${MESSAGE_SUBS_VOICEOVER} three`],
+          [MESSAGE_SUBS_ALL],
+          [MESSAGE_SUBS_ENOUTH],
+        ],
+        oneTimeKeyboard: true,
+        resizeKeyboard: true,
       };
 
       expect(resultingOpts).toStrictEqual(opts);

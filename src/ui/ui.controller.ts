@@ -2,13 +2,12 @@ import * as escapeString from 'escape-string-regexp';
 import { Controller, Logger, UsePipes, ValidationPipe, UseFilters } from '@nestjs/common';
 import { EventPattern, Payload } from '@nestjs/microservices';
 import { SwatcherUserNotFoundException } from '../exceptions/user-not-found.exception';
-import { TelegramMessageDto } from '../dto/message.dto';
+import { TelegramMessageDto, AnnounceDto } from '../dto';
 import { MESSAGE_CREATE_USER } from '../app.strings';
 import { UserService } from '../user/user.provider';
 import { UIService } from './ui.service';
 import { COMMAND_START } from '../app.constants';
 import { SwatcherExceptionsFilter, UnhandledExceptionsFilter } from '../filters';
-import { AnnounceDto } from '../dto/announce.dto';
 
 @Controller()
 @UsePipes(ValidationPipe)
@@ -20,7 +19,6 @@ export class UIController {
 
   @EventPattern('received_announce')
   async receivedAnnounce(@Payload() data: AnnounceDto): Promise<void> {
-    this.logger.log(data);
     return this.uiService.receivedAnnounce(data);
   }
 

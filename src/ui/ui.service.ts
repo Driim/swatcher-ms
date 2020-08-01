@@ -53,8 +53,8 @@ export class UIService {
   private readonly logger = new Logger(UIService.name);
   private handlers: MessageHander[];
   private clearKeyboard = {
-    // eslint-disable-next-line @typescript-eslint/camelcase
-    reply_markup: JSON.stringify({ remove_keyboard: true }),
+    keyboard: [],
+    removeKeyboard: true,
   };
 
   constructor(
@@ -127,15 +127,11 @@ export class UIService {
 
     keyboard.push([MESSAGE_NO_THANKS]);
 
-    /* eslint-disable @typescript-eslint/camelcase */
     return {
-      reply_markup: JSON.stringify({
-        keyboard,
-        one_time_keyboard: true,
-        resize_keyboard: true,
-      }),
+      keyboard: keyboard,
+      oneTimeKeyboard: true,
+      resizeKeyboard: true,
     };
-    /* eslint-enable @typescript-eslint/camelcase */
   }
 
   public getHandlers(): MessageHander[] {
@@ -145,9 +141,9 @@ export class UIService {
   public async sendSerialPreview(user: User, serial: Serial): Promise<void> {
     let message = `${serial.name} \n`;
     message += `${MESSAGE_SEND_ALIAS}: ${serial.alias.join(', ')} \n`;
-    message += `${MESSAGE_SEND_COUNTRY}: ${serial.country.join(', ')}`;
-    message += `${MESSAGE_SEND_GENRE}: ${serial.genre.join(', ')}`;
-    message += `${MESSAGE_SEND_SEASONS}: ${serial.season.length}`;
+    message += `${MESSAGE_SEND_COUNTRY}: ${serial.country.join(', ')} \n`;
+    message += `${MESSAGE_SEND_GENRE}: ${serial.genre.join(', ')} \n`;
+    message += `${MESSAGE_SEND_SEASONS}: ${serial.season.length} \n`;
 
     const img = serial.season.reduce((a, b) => (parseInt(a.name) > parseInt(b.name) ? a : b)).img;
 
@@ -209,7 +205,6 @@ export class UIService {
     return this.sendMessage(user, String(user.id));
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public list = async (user: User, _message: string): Promise<void> => {
     this.logger.log(`Отдаем список пользователю ${user.id}`);
     const subscriptions = await this.subscriptionService.findByUser(user);
@@ -267,15 +262,11 @@ export class UIService {
       keyboard.push([MESSAGE_SUBS_ALL]);
       keyboard.push([MESSAGE_SUBS_ENOUTH]);
 
-      /* eslint-disable @typescript-eslint/camelcase */
       opts = {
-        reply_markup: JSON.stringify({
-          keyboard: keyboard,
-          one_time_keyboard: true,
-          resize_keyboard: true,
-        }),
+        keyboard,
+        oneTimeKeyboard: true,
+        resizeKeyboard: true
       };
-      /* eslint-enable @typescript-eslint/camelcase */
 
       await this.contextService.createContext(user, subscription);
 
@@ -326,15 +317,11 @@ export class UIService {
     keyboard.push([MESSAGE_SUBS_ALL]);
     keyboard.push([MESSAGE_SUBS_ENOUTH]);
 
-    /* eslint-disable @typescript-eslint/camelcase */
     const opts = {
-      reply_markup: JSON.stringify({
-        keyboard,
-        one_time_keyboard: true,
-        resize_keyboard: true,
-      }),
+      keyboard,
+      oneTimeKeyboard: true,
+      resizeKeyboard: true
     };
-    /* eslint-enable @typescript-eslint/camelcase */
 
     return this.sendMessage(user, `${MESSAGE_VOICE_ADD} ${voiceover}`, opts);
   };
