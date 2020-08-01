@@ -35,7 +35,6 @@ export class SerialService {
     return await this.serial.find({ _id: { $in: ids } }).exec();
   }
 
-
   @Cron('0 10 0 * * *')
   async updateIndex(): Promise<void> {
     const names = await this.serial.find({}, 'name').exec();

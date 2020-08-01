@@ -265,7 +265,7 @@ export class UIService {
       opts = {
         keyboard,
         oneTimeKeyboard: true,
-        resizeKeyboard: true
+        resizeKeyboard: true,
       };
 
       await this.contextService.createContext(user, subscription);
@@ -320,7 +320,7 @@ export class UIService {
     const opts = {
       keyboard,
       oneTimeKeyboard: true,
-      resizeKeyboard: true
+      resizeKeyboard: true,
     };
 
     return this.sendMessage(user, `${MESSAGE_VOICE_ADD} ${voiceover}`, opts);

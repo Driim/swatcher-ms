@@ -134,12 +134,9 @@ describe('Swatcher UI', () => {
       await subscriptionService.removeSubscription(defaultUser, defaultSerial);
 
       const opts = {
-        keyboard: [
-          ['Добавить Testing'],
-          ['Нет, не надо']
-        ],
+        keyboard: [['Добавить Testing'], ['Нет, не надо']],
         oneTimeKeyboard: true,
-        resizeKeyboard: true
+        resizeKeyboard: true,
       };
 
       expect(uiService.sendMessage).toBeCalledWith(defaultUser, MESSAGE_FIND_ALL, opts);
@@ -179,7 +176,7 @@ describe('Swatcher UI', () => {
         `${MESSAGE_SUBS_MESSAGE} ${TESTING_NAME}`,
         {
           keyboard: [],
-          removeKeyboard: true
+          removeKeyboard: true,
         },
       );
     });
@@ -389,9 +386,7 @@ describe('Swatcher UI', () => {
       defaultDto.voiceover = 'lostfilm';
       await uiService.receivedAnnounce(defaultDto);
 
-      expect(mock.mock.calls[3][1]).toMatch(
-        `1 серия 1 сезона ${TESTING_NAME} в озвучке lostfilm`,
-      );
+      expect(mock.mock.calls[3][1]).toMatch(`1 серия 1 сезона ${TESTING_NAME} в озвучке lostfilm`);
     });
 
     it('should send message to user subscribed to all voiceovers', async () => {
