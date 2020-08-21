@@ -6,7 +6,7 @@ import { Serial } from '../interfaces/serial.interface';
 import { MongooseModule, getModelToken } from '@nestjs/mongoose';
 import { SerialModule } from './serial.module';
 import { Model } from 'mongoose';
-import { SerialName } from '../app.constants';
+import { SERIAL_COLLECTION } from '../app.constants';
 
 const TESTING_NAME = 'Testing';
 
@@ -38,7 +38,7 @@ describe('Serial Service', () => {
     }).compile();
 
     service = app.get<SerialService>(SerialService);
-    model = app.get<Model<Serial>>(getModelToken(SerialName));
+    model = app.get<Model<Serial>>(getModelToken(SERIAL_COLLECTION));
 
     const serial = new model();
     serial.name = TESTING_NAME;

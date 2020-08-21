@@ -23,7 +23,7 @@ export const COMMAND_ENOUTH_VOICEOVERS = /^Достаточно озвучек$/
 export const MAX_SEARCH_COUNT = 5;
 export const MAX_FREE_SERIALS = 2;
 
-export const SubsName = 'subscription';
-export const SerialName = 'serial';
-export const UserName = 'user';
-export const UserContext = 'context';
+export const SUBS_COLLECTION = 'subscription';
+export const SERIAL_COLLECTION = 'serial';
+export const USER_COLLECTION = 'user';
+export const CONTEXT_COLLECTION = 'context';

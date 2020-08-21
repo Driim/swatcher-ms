@@ -1,17 +1,17 @@
 import { Schema } from 'mongoose';
-import { SerialName, UserName } from '../app.constants';
+import { SERIAL_COLLECTION, USER_COLLECTION } from '../app.constants';
 
 export const SubscriptionSchema = new Schema({
   serial: {
     type: Schema.Types.ObjectId,
-    ref: SerialName,
+    ref: SERIAL_COLLECTION,
     unique: true,
   },
   fans: [
     {
       user: {
         type: Schema.Types.ObjectId,
-        ref: UserName,
+        ref: USER_COLLECTION,
       },
       voiceover: [String],
     },

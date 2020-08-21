@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { UserName } from '../app.constants';
+import { USER_COLLECTION } from '../app.constants';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User } from '../interfaces/user.interface';
@@ -8,7 +8,7 @@ import { SubscriptionService } from '../subscription/subscription.provider';
 @Injectable()
 export class UserService {
   constructor(
-    @InjectModel(UserName) private user: Model<User>,
+    @InjectModel(USER_COLLECTION) private user: Model<User>,
     private readonly subscriptionsService: SubscriptionService,
   ) {}
 

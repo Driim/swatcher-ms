@@ -1,14 +1,14 @@
 import { Schema } from 'mongoose';
-import { UserName, SubsName } from '../app.constants';
+import { USER_COLLECTION, SUBS_COLLECTION } from '../app.constants';
 
 export const ContextSchema = new Schema({
   user: {
     type: Schema.Types.ObjectId,
-    ref: UserName,
+    ref: USER_COLLECTION,
     index: true,
   },
   subscription: {
     type: Schema.Types.ObjectId,
-    ref: SubsName,
+    ref: SUBS_COLLECTION,
   },
 });

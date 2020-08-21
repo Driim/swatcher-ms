@@ -11,7 +11,7 @@ import {
   FUZZY_DISTANCE,
   FUZZY_PATTERN_LENGTH,
   FUZZY_MIN_MATCH,
-  SerialName,
+  SERIAL_COLLECTION,
 } from '../app.constants';
 
 @Injectable()
@@ -29,7 +29,7 @@ export class SerialService {
     keys: ['name'],
   };
 
-  constructor(@InjectModel(SerialName) private serial: Model<Serial>) {}
+  constructor(@InjectModel(SERIAL_COLLECTION) private serial: Model<Serial>) {}
 
   private async findByIds(ids: string[]): Promise<Serial[]> {
     return await this.serial.find({ _id: { $in: ids } }).exec();

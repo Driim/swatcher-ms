@@ -4,7 +4,7 @@ import { MongooseModule, getModelToken } from '@nestjs/mongoose';
 import { SentryModule } from '@ntegral/nestjs-sentry';
 import { LogLevel } from '@sentry/types';
 import { Model } from 'mongoose';
-import { UserName, SerialName, UserContext, SubsName } from '../app.constants';
+import { USER_COLLECTION, SERIAL_COLLECTION, CONTEXT_COLLECTION, SUBS_COLLECTION } from '../app.constants';
 import { UIModule } from './ui.module';
 import { UIService } from './ui.service';
 import { SerialService } from '../serial/serial.provider';
@@ -76,10 +76,10 @@ describe('Swatcher UI', () => {
     subscriptionService = app.get<SubscriptionService>(SubscriptionService);
     contextService = app.get<ContextService>(ContextService);
 
-    userModel = app.get<Model<User>>(getModelToken(UserName));
-    serialModel = app.get<Model<Serial>>(getModelToken(SerialName));
-    contextModel = app.get<Model<ContextPopulated>>(getModelToken(UserContext));
-    subscriptionModel = app.get<Model<SubscriptionPopulated>>(getModelToken(SubsName));
+    userModel = app.get<Model<User>>(getModelToken(USER_COLLECTION));
+    serialModel = app.get<Model<Serial>>(getModelToken(SERIAL_COLLECTION));
+    contextModel = app.get<Model<ContextPopulated>>(getModelToken(CONTEXT_COLLECTION));
+    subscriptionModel = app.get<Model<SubscriptionPopulated>>(getModelToken(SUBS_COLLECTION));
   });
 
   beforeEach(async () => {

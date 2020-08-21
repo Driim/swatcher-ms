@@ -1,7 +1,7 @@
 import { Model } from 'mongoose';
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { UserContext } from '../app.constants';
+import { CONTEXT_COLLECTION } from '../app.constants';
 import { ContextPopulated } from '../interfaces/context.interface';
 import { User, SubscriptionPopulated } from '../interfaces';
 
@@ -10,7 +10,7 @@ export class ContextService {
   private readonly logger = new Logger(ContextService.name);
 
   constructor(
-    @InjectModel(UserContext)
+    @InjectModel(CONTEXT_COLLECTION)
     private context: Model<ContextPopulated>,
   ) {}
 

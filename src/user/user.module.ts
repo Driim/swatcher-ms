@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { Transport, ClientProxyFactory } from '@nestjs/microservices';
 import { MongooseModule } from '@nestjs/mongoose';
-import { TRANSPORT_SERVICE, UserName } from '../app.constants';
+import { TRANSPORT_SERVICE, USER_COLLECTION } from '../app.constants';
 import { UserService } from './user.provider';
 import { UserSchema } from '../schemas';
 import { SubscriptionModule } from '../subscription/subscription.module';
@@ -10,7 +10,7 @@ import { RedisOptions } from '@nestjs/common/interfaces/microservices/microservi
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: UserName, schema: UserSchema }]),
+    MongooseModule.forFeature([{ name: USER_COLLECTION, schema: UserSchema }]),
     SubscriptionModule,
   ],
   providers: [
