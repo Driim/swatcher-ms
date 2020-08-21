@@ -30,7 +30,7 @@
     "@nestjs/schedule": "^0.4.0",
     "@ntegral/nestjs-sentry": "^1.0.3",
     "@types/mongoose": "^5.7.34",
-    "class-transformer": "^0.2.3",
+    "class-transformer": "^0.3.1",
     "class-validator": "^0.11.1",
     "escape-string-regexp": "^2.0.0",
     "fuse.js": "^3.6.1",
