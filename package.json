@@ -15,10 +15,11 @@
     "lint": "eslint '{src,apps,libs,test}/**/*.ts' --fix",
     "test": "jest --verbose true --runInBand",
     "test:watch": "jest --watch --verbose true --runInBand",
-    "test:cov": "jest --coverage",
+    "test:cov": "jest --runInBand --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "prettier": "prettier --write \"src/**/*.ts\""
+    "prettier": "prettier --write \"src/**/*.ts\"",
+    "coveralls": "jest --runInBand --coverage && cat ./coverage/lcov.info | coveralls"
   },
   "dependencies": {
     "@nestjs/common": "^6.11.11",
@@ -52,6 +53,7 @@
     "@types/supertest": "^2.0.10",
     "@typescript-eslint/eslint-plugin": "^2.34.0",
     "@typescript-eslint/parser": "^2.34.0",
+    "coveralls": "^3.1.0",
     "eslint": "^6.7.2",
     "eslint-config-prettier": "^6.7.0",
     "eslint-plugin-import": "^2.22.0",
