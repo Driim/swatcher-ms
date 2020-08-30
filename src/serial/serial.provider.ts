@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Cron } from '@nestjs/schedule';
 import { Model, Schema, Types } from 'mongoose';
-import * as Fuse from 'fuse.js';
+import Fuse from 'fuse.js';
 import { Serial } from '../interfaces';
 import {
   FUZZY_SORT,

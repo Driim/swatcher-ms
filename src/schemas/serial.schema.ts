@@ -5,10 +5,7 @@ export const SerialSchema = new Schema({
     type: String,
     index: true,
   },
-  alias: {
-    type: [String],
-    index: true,
-  },
+  alias: [String],
   genre: [String],
   country: [String],
   director: [String],
@@ -24,3 +21,5 @@ export const SerialSchema = new Schema({
     },
   ],
 });
+
+SerialSchema.index({ name: 1, alias: 1 });

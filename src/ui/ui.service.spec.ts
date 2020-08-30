@@ -4,7 +4,12 @@ import { MongooseModule, getModelToken } from '@nestjs/mongoose';
 import { SentryModule } from '@ntegral/nestjs-sentry';
 import { LogLevel } from '@sentry/types';
 import { Model } from 'mongoose';
-import { USER_COLLECTION, SERIAL_COLLECTION, CONTEXT_COLLECTION, SUBS_COLLECTION } from '../app.constants';
+import {
+  USER_COLLECTION,
+  SERIAL_COLLECTION,
+  CONTEXT_COLLECTION,
+  SUBS_COLLECTION,
+} from '../app.constants';
 import { UIModule } from './ui.module';
 import { UIService } from './ui.service';
 import { SerialService } from '../serial/serial.provider';

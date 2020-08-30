@@ -50,7 +50,9 @@ describe('Serial Service', () => {
     subsService = app.get<SubscriptionService>(SubscriptionService);
     serialService = app.get<SerialService>(SerialService);
     subscriptionModel = app.get<Model<Subscription>>(getModelToken(SUBS_COLLECTION));
-    subscriptionPopulatedModel = app.get<Model<SubscriptionPopulated>>(getModelToken(SUBS_COLLECTION));
+    subscriptionPopulatedModel = app.get<Model<SubscriptionPopulated>>(
+      getModelToken(SUBS_COLLECTION),
+    );
     serialModel = app.get<Model<Serial>>(getModelToken(SERIAL_COLLECTION));
     userService = app.get<UserService>(UserService);
     userModel = app.get<Model<User>>(getModelToken(USER_COLLECTION));

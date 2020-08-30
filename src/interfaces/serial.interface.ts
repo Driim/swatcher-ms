@@ -1,6 +1,6 @@
 import { Document, Schema } from 'mongoose';
 
-class Season {
+export class Season {
   name: string;
   desc: string;
   img: string;

@@ -27,3 +27,5 @@ export const SUBS_COLLECTION = 'subscription';
 export const SERIAL_COLLECTION = 'serial';
 export const USER_COLLECTION = 'user';
 export const CONTEXT_COLLECTION = 'context';
+export const ANNOUNCE_COLLECTION = 'announce';
+export const PAYER_COLLECTION = 'payer';

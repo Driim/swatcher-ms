@@ -1,4 +1,4 @@
-import * as escapeString from 'escape-string-regexp';
+import escapeString from 'escape-string-regexp';
 import { Controller, Logger, UsePipes, ValidationPipe, UseFilters } from '@nestjs/common';
 import { EventPattern, Payload } from '@nestjs/microservices';
 import { SwatcherUserNotFoundException } from '../exceptions/user-not-found.exception';

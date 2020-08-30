@@ -121,6 +121,10 @@ export class UIService {
     const keyboard = [];
 
     for (const subs of subscriptions) {
+      /**
+       * TODO: get user voiceovers from subs by finding user in subs.fans
+       *       and send voiceovers as options param to sendSerialPreviev
+       */
       await this.sendSerialPreview(user, subs.serial);
       keyboard.push([`${pattern} ${subs.serial.name}`]);
     }
@@ -254,6 +258,8 @@ export class UIService {
       const keyboard = [];
 
       subscription.serial.voiceover = subscription.serial.voiceover || [];
+
+      /** TODO: user can already be subscribed */
 
       for (const voiceover of subscription.serial.voiceover) {
         keyboard.push([`${MESSAGE_SUBS_VOICEOVER} ${voiceover}`]);

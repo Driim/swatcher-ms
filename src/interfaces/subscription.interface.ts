@@ -15,6 +15,10 @@ export interface Subscription extends SubscriptionBase {
   serial: Types.ObjectId;
 }
 
+export interface SubscriptionSerialSchema extends SubscriptionBase {
+  serial: Schema.Types.ObjectId;
+}
+
 export interface SubscriptionPopulated extends SubscriptionBase {
   serial: Serial;
 }
