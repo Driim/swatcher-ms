@@ -7,6 +7,7 @@ export const MESSAGE_SEND_ALIAS = 'Другие названия';
 export const MESSAGE_SEND_COUNTRY = 'Страна';
 export const MESSAGE_SEND_GENRE = 'Жанр';
 export const MESSAGE_SEND_SEASONS = 'Количество сезонов';
+export const MESSAGE_SEND_VOICEOVERS = 'Подписка на озвучки';
 export const MESSAGE_FIND_ALL = 'Какой добавить?';
 export const MESSAGE_LIST_REMOVE = 'Удалить';
 export const MESSAGE_LIST_MESSAGE = 'Вот список сериалов на которые вы подписаны!';

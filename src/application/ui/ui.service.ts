@@ -38,12 +38,13 @@ import {
   MESSAGE_SUBS_MESSAGE_PAYED,
   MESSAGE_SUBS_ENOUTH,
   MESSAGE_VOICE_ADD,
+  MESSAGE_SEND_VOICEOVERS,
 } from '../../app.strings';
 import { Serial } from '../../interfaces/serial.interface';
 import { SwatcherNothingFoundException, SwatcherBadRequestException } from '../../exceptions';
 import { SubscriptionService } from '../../domains/subscription/subscription.provider';
 import { SerialService } from '../../domains/serial/serial.provider';
-import { SubscriptionPopulated } from '../../interfaces';
+import { SubscriptionPopulated, FanInterface } from '../../interfaces';
 import { ContextService } from '../../domains/context/context.provider';
 import { UserService } from '../../domains/user/user.provider';
 import { AnnounceDto } from '../../dto/announce.dto';
@@ -113,41 +114,20 @@ export class UIService {
     ];
   }
 
-  private async sendPreviewAndGenerateKeyboard(
-    user: User,
-    pattern: string,
-    subscriptions: SubscriptionPopulated[],
-  ): Promise<any> {
-    const keyboard = [];
-
-    for (const subs of subscriptions) {
-      /**
-       * TODO: get user voiceovers from subs by finding user in subs.fans
-       *       and send voiceovers as options param to sendSerialPreviev
-       */
-      await this.sendSerialPreview(user, subs.serial);
-      keyboard.push([`${pattern} ${subs.serial.name}`]);
-    }
-
-    keyboard.push([MESSAGE_NO_THANKS]);
-
-    return {
-      keyboard: keyboard,
-      oneTimeKeyboard: true,
-      resizeKeyboard: true,
-    };
-  }
-
   public getHandlers(): MessageHander[] {
     return this.handlers;
   }
 
-  public async sendSerialPreview(user: User, serial: Serial): Promise<void> {
+  public async sendSerialPreview(user: User, serial: Serial, fan?: FanInterface): Promise<void> {
     let message = `${serial.name} \n`;
     message += `${MESSAGE_SEND_ALIAS}: ${serial.alias.join(', ')} \n`;
     message += `${MESSAGE_SEND_COUNTRY}: ${serial.country.join(', ')} \n`;
     message += `${MESSAGE_SEND_GENRE}: ${serial.genre.join(', ')} \n`;
     message += `${MESSAGE_SEND_SEASONS}: ${serial.season.length} \n`;
+
+    if (fan && fan.voiceover.length) {
+      message += `${MESSAGE_SEND_VOICEOVERS}: ${fan.voiceover.join()} \n`;
+    }
 
     const img = serial.season.reduce((a, b) => (parseInt(a.name) > parseInt(b.name) ? a : b)).img;
 
@@ -179,14 +159,27 @@ export class UIService {
     this.logger.log(`Ищем ${message} для пользователя ${user.id}`);
 
     let subscriptions = await this.subscriptionService.findBySerials(serials);
-    const beforeLength = subscriptions.length;
+    const originalLength = subscriptions.length;
     subscriptions = subscriptions
       .sort((a, b) => b.fans.length - a.fans.length)
       .slice(0, MAX_SEARCH_COUNT);
 
-    const opts = await this.sendPreviewAndGenerateKeyboard(user, MESSAGE_ADD_SERIAL, subscriptions);
+    const keyboard = [];
 
-    return beforeLength === subscriptions.length
+    for (const subs of subscriptions) {
+      await this.sendSerialPreview(user, subs.serial);
+      keyboard.push([`${MESSAGE_ADD_SERIAL} ${subs.serial.name}`]);
+    }
+
+    keyboard.push([MESSAGE_NO_THANKS]);
+
+    const opts = {
+      keyboard: keyboard,
+      oneTimeKeyboard: true,
+      resizeKeyboard: true,
+    };
+
+    return originalLength === subscriptions.length
       ? this.sendMessage(user, MESSAGE_FIND_ALL, opts)
       : this.sendMessage(user, MESSAGE_FIND_EXT(serials.length), opts);
   }
@@ -213,11 +206,21 @@ export class UIService {
     this.logger.log(`Отдаем список пользователю ${user.id}`);
     const subscriptions = await this.subscriptionService.findByUser(user);
 
-    const opts = await this.sendPreviewAndGenerateKeyboard(
-      user,
-      MESSAGE_LIST_REMOVE,
-      subscriptions,
-    );
+    const keyboard = [];
+
+    for (const subs of subscriptions) {
+      const fan = this.subscriptionService.findFan(user, subs);
+      await this.sendSerialPreview(user, subs.serial, fan);
+      keyboard.push([`${MESSAGE_LIST_REMOVE} ${subs.serial.name}`]);
+    }
+
+    keyboard.push([MESSAGE_NO_THANKS]);
+
+    const opts = {
+      keyboard: keyboard,
+      oneTimeKeyboard: true,
+      resizeKeyboard: true,
+    }
 
     return this.sendMessage(user, MESSAGE_LIST_MESSAGE, opts);
   };
