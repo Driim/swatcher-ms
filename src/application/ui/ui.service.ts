@@ -262,9 +262,16 @@ export class UIService {
 
       subscription.serial.voiceover = subscription.serial.voiceover || [];
 
-      /** TODO: user can already be subscribed */
+      /** user can already be subscribed */
+      const fan = this.subscriptionService.findFan(user, subscription);
+      let voiceovers = subscription.serial.voiceover;
 
-      for (const voiceover of subscription.serial.voiceover) {
+      if (fan) {
+        /** filter voiceovers user already subscribed */
+        voiceovers = subscription.serial.voiceover.filter((voice) => !fan.voiceover.includes(voice));
+      }
+
+      for (const voiceover of voiceovers) {
         keyboard.push([`${MESSAGE_SUBS_VOICEOVER} ${voiceover}`]);
       }
 
