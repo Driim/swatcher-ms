@@ -2,17 +2,17 @@
 import { Model, Types } from 'mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
 import { MongooseModule, getModelToken } from '@nestjs/mongoose';
-import { SUBS_COLLECTION, SERIAL_COLLECTION, USER_COLLECTION } from '../app.constants';
-import { Serial } from '../interfaces/serial.interface';
+import { SUBS_COLLECTION, SERIAL_COLLECTION, USER_COLLECTION } from '../../app.constants';
+import { Serial } from '../../interfaces/serial.interface';
 import { SubscriptionService } from './subscription.provider';
-import { Subscription, SubscriptionPopulated } from '../interfaces/subscription.interface';
+import { Subscription, SubscriptionPopulated } from '../../interfaces/subscription.interface';
 import { SerialService } from '../serial/serial.provider';
 import { SubscriptionModule } from './subscription.module';
 import { SerialModule } from '../serial/serial.module';
 import { UserModule } from '../user/user.module';
 import { UserService } from '../user/user.provider';
-import { SwatcherLimitExceedException, SwatcherBadRequestException } from '../exceptions';
-import { User } from '../interfaces';
+import { SwatcherLimitExceedException, SwatcherBadRequestException } from '../../exceptions';
+import { User } from '../../interfaces';
 import { ConfigModule } from '@nestjs/config';
 
 describe('Serial Service', () => {

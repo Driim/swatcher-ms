@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Cron } from '@nestjs/schedule';
 import { Model, Schema, Types } from 'mongoose';
 import Fuse from 'fuse.js';
-import { Serial } from '../interfaces';
+import { Serial } from '../../interfaces';
 import {
   FUZZY_SORT,
   FUZZY_THRESHOLD,
@@ -12,7 +12,7 @@ import {
   FUZZY_PATTERN_LENGTH,
   FUZZY_MIN_MATCH,
   SERIAL_COLLECTION,
-} from '../app.constants';
+} from '../../app.constants';
 
 @Injectable()
 export class SerialService {

@@ -3,9 +3,9 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { SentryModule } from '@ntegral/nestjs-sentry';
 import { LogLevel } from '@sentry/types';
-import { SerialModule } from './serial/serial.module';
-import { UserModule } from './user/user.module';
-import { UIModule } from './ui/ui.module';
+import { SerialModule } from './domains/serial/serial.module';
+import { UserModule } from './domains/user/user.module';
+import { UIModule } from './application/ui/ui.module';
 
 @Module({
   imports: [

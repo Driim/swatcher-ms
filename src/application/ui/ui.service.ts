@@ -1,6 +1,6 @@
 import { Injectable, Inject, Logger } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
-import { User } from '../interfaces/user.interface';
+import { User } from '../../interfaces/user.interface';
 import {
   TRANSPORT_SERVICE,
   COMMAND_HELP,
@@ -15,8 +15,8 @@ import {
   COMMAND_VOICEOVER,
   COMMAND_ENOUTH_VOICEOVERS,
   COMMAND_ANY_VOICEOVER,
-} from '../app.constants';
-import { MessageHander } from '../interfaces/message-handler.interface';
+} from '../../app.constants';
+import { MessageHander } from '../../interfaces/message-handler.interface';
 import {
   MESSAGE_REMOVE_USER,
   MESSAGE_HELP,
@@ -38,15 +38,15 @@ import {
   MESSAGE_SUBS_MESSAGE_PAYED,
   MESSAGE_SUBS_ENOUTH,
   MESSAGE_VOICE_ADD,
-} from '../app.strings';
-import { Serial } from '../interfaces/serial.interface';
-import { SwatcherNothingFoundException, SwatcherBadRequestException } from '../exceptions';
-import { SubscriptionService } from '../subscription/subscription.provider';
-import { SerialService } from '../serial/serial.provider';
-import { SubscriptionPopulated } from '../interfaces';
-import { ContextService } from '../context/context.provider';
-import { UserService } from '../user/user.provider';
-import { AnnounceDto } from '../dto/announce.dto';
+} from '../../app.strings';
+import { Serial } from '../../interfaces/serial.interface';
+import { SwatcherNothingFoundException, SwatcherBadRequestException } from '../../exceptions';
+import { SubscriptionService } from '../../domains/subscription/subscription.provider';
+import { SerialService } from '../../domains/serial/serial.provider';
+import { SubscriptionPopulated } from '../../interfaces';
+import { ContextService } from '../../domains/context/context.provider';
+import { UserService } from '../../domains/user/user.provider';
+import { AnnounceDto } from '../../dto/announce.dto';
 
 @Injectable()
 export class UIService {

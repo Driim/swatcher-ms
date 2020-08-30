@@ -1,12 +1,12 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { SerialService } from './serial.provider';
-import { TRANSPORT_SERVICE } from '../app.constants';
-import { Serial } from '../interfaces/serial.interface';
+import { TRANSPORT_SERVICE } from '../../app.constants';
+import { Serial } from '../../interfaces/serial.interface';
 import { MongooseModule, getModelToken } from '@nestjs/mongoose';
 import { SerialModule } from './serial.module';
 import { Model } from 'mongoose';
-import { SERIAL_COLLECTION } from '../app.constants';
+import { SERIAL_COLLECTION } from '../../app.constants';
 
 const TESTING_NAME = 'Testing';
 

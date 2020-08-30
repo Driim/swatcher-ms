@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { SERIAL_COLLECTION } from '../app.constants';
-import { SerialSchema } from '../schemas';
+import { SERIAL_COLLECTION } from '../../app.constants';
+import { SerialSchema } from '../../schemas';
 import { SerialService } from './serial.provider';
 
 @Module({

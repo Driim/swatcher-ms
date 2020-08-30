@@ -1,13 +1,13 @@
 import escapeString from 'escape-string-regexp';
 import { Controller, Logger, UsePipes, ValidationPipe, UseFilters } from '@nestjs/common';
 import { EventPattern, Payload } from '@nestjs/microservices';
-import { SwatcherUserNotFoundException } from '../exceptions/user-not-found.exception';
-import { TelegramMessageDto, AnnounceDto } from '../dto';
-import { MESSAGE_CREATE_USER } from '../app.strings';
-import { UserService } from '../user/user.provider';
+import { SwatcherUserNotFoundException } from '../../exceptions/user-not-found.exception';
+import { TelegramMessageDto, AnnounceDto } from '../../dto';
+import { MESSAGE_CREATE_USER } from '../../app.strings';
+import { UserService } from '../../domains/user/user.provider';
 import { UIService } from './ui.service';
-import { COMMAND_START } from '../app.constants';
-import { SwatcherExceptionsFilter, UnhandledExceptionsFilter } from '../filters';
+import { COMMAND_START } from '../../app.constants';
+import { SwatcherExceptionsFilter, UnhandledExceptionsFilter } from '../../filters';
 
 @Controller()
 @UsePipes(ValidationPipe)

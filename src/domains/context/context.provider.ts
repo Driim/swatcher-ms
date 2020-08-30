@@ -1,9 +1,9 @@
 import { Model } from 'mongoose';
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { CONTEXT_COLLECTION } from '../app.constants';
-import { ContextPopulated } from '../interfaces/context.interface';
-import { User, SubscriptionPopulated } from '../interfaces';
+import { CONTEXT_COLLECTION } from '../../app.constants';
+import { ContextPopulated } from '../../interfaces/context.interface';
+import { User, SubscriptionPopulated } from '../../interfaces';
 
 @Injectable()
 export class ContextService {

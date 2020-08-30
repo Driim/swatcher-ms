@@ -1,9 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import { SUBS_COLLECTION, MAX_FREE_SERIALS } from '../app.constants';
-import { Serial, SubscriptionPopulated, User, Subscription, FanInterface } from '../interfaces';
-import { SwatcherBadRequestException, SwatcherLimitExceedException } from '../exceptions';
+import { SUBS_COLLECTION, MAX_FREE_SERIALS } from '../../app.constants';
+import { Serial, SubscriptionPopulated, User, Subscription, FanInterface } from '../../interfaces';
+import { SwatcherBadRequestException, SwatcherLimitExceedException } from '../../exceptions';
 
 @Injectable()
 export class SubscriptionService {

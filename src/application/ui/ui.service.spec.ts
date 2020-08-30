@@ -9,14 +9,14 @@ import {
   SERIAL_COLLECTION,
   CONTEXT_COLLECTION,
   SUBS_COLLECTION,
-} from '../app.constants';
+} from '../../app.constants';
 import { UIModule } from './ui.module';
 import { UIService } from './ui.service';
-import { SerialService } from '../serial/serial.provider';
-import { UserService } from '../user/user.provider';
-import { User, Serial, SubscriptionPopulated } from '../interfaces';
-import { SwatcherNothingFoundException, SwatcherBadRequestException } from '../exceptions';
-import { SubscriptionService } from '../subscription/subscription.provider';
+import { SerialService } from '../../domains/serial/serial.provider';
+import { UserService } from '../../domains/user/user.provider';
+import { User, Serial, SubscriptionPopulated } from '../../interfaces';
+import { SwatcherNothingFoundException, SwatcherBadRequestException } from '../../exceptions';
+import { SubscriptionService } from '../../domains/subscription/subscription.provider';
 import {
   MESSAGE_FIND_ALL,
   MESSAGE_SUBS_MESSAGE,
@@ -24,11 +24,11 @@ import {
   MESSAGE_SUBS_VOICEOVER,
   MESSAGE_SUBS_ALL,
   MESSAGE_SUBS_ENOUTH,
-} from '../app.strings';
-import { ContextService } from '../context/context.provider';
-import { ContextPopulated } from '../interfaces/context.interface';
+} from '../../app.strings';
+import { ContextService } from '../../domains/context/context.provider';
+import { ContextPopulated } from '../../interfaces/context.interface';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { AnnounceDto } from '../dto/announce.dto';
+import { AnnounceDto } from '../../dto/announce.dto';
 
 describe('Swatcher UI', () => {
   let uiService: UIService;
