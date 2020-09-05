@@ -35,3 +35,6 @@ lerna-debug.log*
 
 # Local enviroment
 .env
+
+# Coverage
+src/coverage/

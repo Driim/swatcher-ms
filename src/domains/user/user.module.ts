@@ -1,12 +1,11 @@
 import { Module } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { Transport, ClientProxyFactory } from '@nestjs/microservices';
 import { MongooseModule } from '@nestjs/mongoose';
 import { TRANSPORT_SERVICE, USER_COLLECTION } from '../../app.constants';
 import { UserService } from './user.provider';
 import { UserSchema } from '../../schemas';
 import { SubscriptionModule } from '../subscription/subscription.module';
-import { ConfigService } from '@nestjs/config';
-import { RedisOptions } from '@nestjs/common/interfaces/microservices/microservice-configuration.interface';
 
 @Module({
   imports: [
@@ -17,7 +16,7 @@ import { RedisOptions } from '@nestjs/common/interfaces/microservices/microservi
     {
       provide: TRANSPORT_SERVICE,
       useFactory: (config: ConfigService) => {
-        const options: RedisOptions = {
+        const options: any = {
           transport: Transport.REDIS,
           options: {
             url: config.get<string>('REDIS_URI'),

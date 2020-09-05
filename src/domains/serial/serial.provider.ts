@@ -63,10 +63,14 @@ export class SerialService {
     }
 
     const notExactMatch = this.fuse.search(name) as Array<{
-      _id: Schema.Types.ObjectId;
-      name: string;
+      item: {
+        _id: Schema.Types.ObjectId;
+        name: string;
+      },
+      refIndex: number
     }>;
-    const ids = notExactMatch.map((serial) => serial._id.toString());
+    console.log(notExactMatch);
+    const ids = notExactMatch.map((result) => result.item._id.toString());
 
     return this.findByIds(ids);
   }

@@ -1,8 +1,8 @@
 import 'reflect-metadata';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { Transport } from '@nestjs/common/enums/transport.enum';
 import { Logger } from '@nestjs/common';
+import { Transport } from '@nestjs/microservices';
 
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.createMicroservice(AppModule, {

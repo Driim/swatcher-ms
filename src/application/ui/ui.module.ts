@@ -8,7 +8,6 @@ import { SubscriptionModule } from '../../domains/subscription/subscription.modu
 import { SerialModule } from '../../domains/serial/serial.module';
 import { ContextModule } from '../../domains/context/context.module';
 import { ConfigService } from '@nestjs/config';
-import { RedisOptions } from '@nestjs/common/interfaces/microservices/microservice-configuration.interface';
 
 @Module({
   imports: [UserModule, SubscriptionModule, SerialModule, ContextModule],
@@ -16,7 +15,7 @@ import { RedisOptions } from '@nestjs/common/interfaces/microservices/microservi
     {
       provide: TRANSPORT_SERVICE,
       useFactory: (config: ConfigService): ClientProxy => {
-        const options: RedisOptions = {
+        const options: any = {
           transport: Transport.REDIS,
           options: {
             url: config.get<string>('REDIS_URI'),
