@@ -200,14 +200,6 @@ const migration = async (): Promise<void> => {
         (a: OldSeason, b: OldSeason) => a.name === b.name,
       ) as OldSeason[];
 
-      if (oldSeasons.length !== oldSerial.season.length) {
-        console.log(
-          `\nСериал ${newSerial.name} имел ${
-            oldSerial.season.length - oldSeasons.length
-          } дубликатов в сезонах\n`,
-        );
-      }
-
       for (const oldSeason of oldSeasons) {
         const season = new Season();
 
