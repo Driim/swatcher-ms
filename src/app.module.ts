@@ -6,6 +6,8 @@ import { LogLevel } from '@sentry/types';
 import { SerialModule } from './domains/serial/serial.module';
 import { UserModule } from './domains/user/user.module';
 import { UIModule } from './application/ui/ui.module';
+import { YandexModule } from './application/yandex/yandex.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
@@ -31,9 +33,11 @@ import { UIModule } from './application/ui/ui.module';
       }),
       inject: [ConfigService],
     }),
+    ScheduleModule.forRoot(),
     SerialModule,
     UserModule,
     UIModule,
+    YandexModule,
   ],
 })
 export class AppModule {}
