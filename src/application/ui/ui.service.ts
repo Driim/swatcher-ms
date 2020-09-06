@@ -220,7 +220,7 @@ export class UIService {
       keyboard: keyboard,
       oneTimeKeyboard: true,
       resizeKeyboard: true,
-    }
+    };
 
     return this.sendMessage(user, MESSAGE_LIST_MESSAGE, opts);
   };
@@ -268,7 +268,9 @@ export class UIService {
 
       if (fan) {
         /** filter voiceovers user already subscribed */
-        voiceovers = subscription.serial.voiceover.filter((voice) => !fan.voiceover.includes(voice));
+        voiceovers = subscription.serial.voiceover.filter(
+          (voice) => !fan.voiceover.includes(voice),
+        );
       }
 
       for (const voiceover of voiceovers) {

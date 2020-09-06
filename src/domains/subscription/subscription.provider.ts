@@ -29,10 +29,7 @@ export class SubscriptionService {
   }
 
   async findByUser(user: User): Promise<SubscriptionPopulated[]> {
-    return this.populatedSubscription
-      .find({ 'fans.user': user._id })
-      .populate('serial')
-      .exec();
+    return this.populatedSubscription.find({ 'fans.user': user._id }).populate('serial').exec();
   }
 
   findFan(user: User, subs: SubscriptionPopulated): FanInterface {
@@ -96,10 +93,7 @@ export class SubscriptionService {
   }
 
   async getSubscribers(id: string): Promise<FanInterface[]> {
-    const subs = await this.subscription
-      .findOne({ serial: id })
-      .populate('fans.user')
-      .exec();
+    const subs = await this.subscription.findOne({ serial: id }).populate('fans.user').exec();
 
     if (!subs) {
       return [];

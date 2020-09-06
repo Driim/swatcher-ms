@@ -65,7 +65,7 @@ describe('Swatcher UI', () => {
           useFactory: async (cfg: ConfigService) => ({
             dsn: cfg.get('SENTRY_DSN'),
             debug: true,
-            environment: 'production',
+            environment: 'development',
             release: null, // must create a release in sentry.io dashboard
             logLevel: LogLevel.Debug, //based on sentry.io loglevel //
           }),

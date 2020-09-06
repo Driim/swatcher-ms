@@ -202,8 +202,9 @@ const migration = async (): Promise<void> => {
 
       if (oldSeasons.length !== oldSerial.season.length) {
         console.log(
-          `\nСериал ${newSerial.name} имел ${oldSerial.season.length -
-            oldSeasons.length} дубликатов в сезонах\n`,
+          `\nСериал ${newSerial.name} имел ${
+            oldSerial.season.length - oldSeasons.length
+          } дубликатов в сезонах\n`,
         );
       }
 

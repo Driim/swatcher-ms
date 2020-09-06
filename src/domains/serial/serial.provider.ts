@@ -66,8 +66,8 @@ export class SerialService {
       item: {
         _id: Schema.Types.ObjectId;
         name: string;
-      },
-      refIndex: number
+      };
+      refIndex: number;
     }>;
     console.log(notExactMatch);
     const ids = notExactMatch.map((result) => result.item._id.toString());
