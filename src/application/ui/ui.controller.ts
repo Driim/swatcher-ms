@@ -32,7 +32,7 @@ export class UIController {
       if (COMMAND_START.test(text)) {
         this.logger.log(`Создаем нового пользователя ${data.id}`);
         const newUser = await this.userService.create(data.id, data.username);
-        return await this.uiService.sendMessage(newUser, MESSAGE_CREATE_USER(newUser.username));
+        return await this.uiService.sendMessage(newUser, MESSAGE_CREATE_USER(newUser.username, newUser.id));
       } else {
         throw new SwatcherUserNotFoundException(data.id);
       }
