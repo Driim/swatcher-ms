@@ -19,11 +19,12 @@ export class SerialService {
   private readonly logger = new Logger(SerialService.name);
   private fuse = null;
   private readonly fuseOpts = {
+    includeScore: true,
     shouldSort: FUZZY_SORT,
     threshold: FUZZY_THRESHOLD,
-    location: FUZZY_LOCATION,
-    distance: FUZZY_DISTANCE,
-    maxPatternLength: FUZZY_PATTERN_LENGTH,
+    // location: FUZZY_LOCATION,
+    // distance: FUZZY_DISTANCE,
+    // maxPatternLength: FUZZY_PATTERN_LENGTH,
     minMatchCharLength: FUZZY_MIN_MATCH,
     /* searching only in serials names */
     keys: ['name'],
@@ -33,6 +34,11 @@ export class SerialService {
 
   private async findByIds(ids: string[]): Promise<Serial[]> {
     return await this.serial.find({ _id: { $in: ids } }).exec();
+  }
+
+  onApplicationBootstrap() {
+    this.logger.log('Application bootstrap index update');
+    this.updateIndex();
   }
 
   @Cron('0 10 0 * * *')
@@ -69,7 +75,6 @@ export class SerialService {
       };
       refIndex: number;
     }>;
-    console.log(notExactMatch);
     const ids = notExactMatch.map((result) => result.item._id.toString());
 
     return this.findByIds(ids);
