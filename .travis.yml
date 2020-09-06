@@ -3,11 +3,9 @@ node_js:
   - 12
 services:
   - mongodb
-  - redis
 before_script:
   - sleep 15
 env:
   - MONGODB_URI=mongodb://localhost:27017/swatcher
-  - REDIS_URI=redis://localhost:6379
 script:
   - npm run coveralls
