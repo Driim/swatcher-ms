@@ -13,13 +13,19 @@ export class UserService {
   ) {}
 
   async create(id: number, username: string): Promise<User> {
-    // new this.serial(dto)
-    const user = new this.user();
-
-    user.id = id;
-    user.username = username;
-    user.active = true;
-    user.payed = 0;
+    /** check if user already in DB */
+    let user = await this.user.findOne({ id });
+    if (user) {
+      user.username = username;
+      user.active = true;
+    } else {
+      user = new this.user();
+      user.id = id;
+      user.username = username;
+      user.active = true;
+      user.payed = 0;
+      user.type = 'telegram'
+    }
 
     return user.save();
   }
