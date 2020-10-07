@@ -1,18 +1,17 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ClientsModule, Transport } from '@nestjs/microservices';
-import { SerialService } from './serial.provider';
-import { TRANSPORT_SERVICE } from '../../app.constants';
-import { Serial } from '../../interfaces/serial.interface';
 import { MongooseModule, getModelToken } from '@nestjs/mongoose';
-import { SerialModule } from './serial.module';
 import { Model } from 'mongoose';
-import { SERIAL_COLLECTION } from '../../app.constants';
+import { SerialService } from './serial.provider';
+import { TRANSPORT_SERVICE, SERIAL_COLLECTION } from '../../app.constants';
+import { Serial } from '../../interfaces/serial.interface';
+import { SerialModule } from './serial.module';
 
 const TESTING_NAME = 'Testing';
 
 describe('Serial Service', () => {
   let service: SerialService;
-  let model: Model<Serial>;
+  let SerialModel: Model<Serial>;
   let app: TestingModule;
 
   beforeAll(async () => {
@@ -26,7 +25,7 @@ describe('Serial Service', () => {
           },
         ]),
         MongooseModule.forRootAsync({
-          useFactory: async () => ({
+          useFactory: () => ({
             uri: 'mongodb://localhost:27017/swatcher_test',
             useNewUrlParser: true,
             useUnifiedTopology: true,
@@ -38,9 +37,9 @@ describe('Serial Service', () => {
     }).compile();
 
     service = app.get<SerialService>(SerialService);
-    model = app.get<Model<Serial>>(getModelToken(SERIAL_COLLECTION));
+    SerialModel = app.get<Model<Serial>>(getModelToken(SERIAL_COLLECTION));
 
-    const serial = new model();
+    const serial = new SerialModel();
     serial.name = TESTING_NAME;
     serial.alias = ['Alias'];
     serial.country = ['Russia'];
@@ -75,7 +74,7 @@ describe('Serial Service', () => {
   });
 
   afterAll(async () => {
-    await model.deleteMany({}).exec();
-    app.close();
+    await SerialModel.deleteMany({}).exec();
+    return app.close();
   });
 });

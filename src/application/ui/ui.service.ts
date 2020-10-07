@@ -44,7 +44,7 @@ import { Serial } from '../../interfaces/serial.interface';
 import { SwatcherNothingFoundException, SwatcherBadRequestException } from '../../exceptions';
 import { SubscriptionService } from '../../domains/subscription/subscription.provider';
 import { SerialService } from '../../domains/serial/serial.provider';
-import { SubscriptionPopulated, FanInterface } from '../../interfaces';
+import { FanInterface } from '../../interfaces';
 import { ContextService } from '../../domains/context/context.provider';
 import { UserService } from '../../domains/user/user.provider';
 import { AnnounceDto } from '../../dto/announce.dto';
@@ -52,7 +52,9 @@ import { AnnounceDto } from '../../dto/announce.dto';
 @Injectable()
 export class UIService {
   private readonly logger = new Logger(UIService.name);
+
   private handlers: MessageHander[];
+
   private clearKeyboard = {
     keyboard: [],
     removeKeyboard: true,
@@ -129,7 +131,9 @@ export class UIService {
       message += `${MESSAGE_SEND_VOICEOVERS}: ${fan.voiceover.join()} \n`;
     }
 
-    const img = serial.season.reduce((a, b) => (parseInt(a.name) > parseInt(b.name) ? a : b)).img;
+    const { img } = serial.season.reduce((a, b) =>
+      parseInt(a.name, 10) > parseInt(b.name, 10) ? a : b,
+    );
 
     const opts = {
       caption: message,
@@ -152,7 +156,7 @@ export class UIService {
     }
 
     const serials = await this.serialService.find(message);
-    if (serials.length == 0) {
+    if (serials.length === 0) {
       throw new SwatcherNothingFoundException(user, message);
     }
 
@@ -174,7 +178,7 @@ export class UIService {
     keyboard.push([MESSAGE_NO_THANKS]);
 
     const opts = {
-      keyboard: keyboard,
+      keyboard,
       oneTimeKeyboard: true,
       resizeKeyboard: true,
     };
@@ -184,24 +188,29 @@ export class UIService {
       : this.sendMessage(user, MESSAGE_FIND_EXT(serials.length), opts);
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public remove = async (user: User, _message: string): Promise<void> => {
     this.logger.log(`Удаляем пользователя ${user.id}`);
     await this.userService.block(user.id);
     return this.sendMessage(user, MESSAGE_REMOVE_USER);
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public help = async (user: User, _message: string): Promise<void> => {
     return this.sendMessage(user, MESSAGE_HELP);
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public noThanks = async (user: User, _message: string): Promise<void> => {
     return this.sendMessage(user, MESSAGE_OK, this.clearKeyboard);
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public id = async (user: User, _message: string): Promise<void> => {
     return this.sendMessage(user, String(user.id));
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public list = async (user: User, _message: string): Promise<void> => {
     this.logger.log(`Отдаем список пользователю ${user.id}`);
     const subscriptions = await this.subscriptionService.findByUser(user);
@@ -209,7 +218,7 @@ export class UIService {
     const keyboard = [];
 
     for (const subs of subscriptions) {
-      const fan = this.subscriptionService.findFan(user, subs);
+      const fan = SubscriptionService.findFan(user, subs);
       await this.sendSerialPreview(user, subs.serial, fan);
       keyboard.push([`${MESSAGE_LIST_REMOVE} ${subs.serial.name}`]);
     }
@@ -217,7 +226,7 @@ export class UIService {
     keyboard.push([MESSAGE_NO_THANKS]);
 
     const opts = {
-      keyboard: keyboard,
+      keyboard,
       oneTimeKeyboard: true,
       resizeKeyboard: true,
     };
@@ -263,7 +272,7 @@ export class UIService {
       subscription.serial.voiceover = subscription.serial.voiceover || [];
 
       /** user can already be subscribed */
-      const fan = this.subscriptionService.findFan(user, subscription);
+      const fan = SubscriptionService.findFan(user, subscription);
       let voiceovers = subscription.serial.voiceover;
 
       if (fan) {
@@ -307,8 +316,8 @@ export class UIService {
       throw new SwatcherBadRequestException(user, 'empty voiceover');
     }
 
-    const subscription = context.subscription;
-    const fan = this.subscriptionService.findFan(user, subscription);
+    const { subscription } = context;
+    const fan = SubscriptionService.findFan(user, subscription);
     if (!fan) {
       throw new SwatcherBadRequestException(user, voiceover);
     }
@@ -318,7 +327,7 @@ export class UIService {
       fan.voiceover.push(voiceover);
     }
 
-    const serial = subscription.serial;
+    const { serial } = subscription;
     this.logger.log(
       `Добавляем озвучку ${voiceover} на сериал ${serial.name} пользователю ${user.id}`,
     );
@@ -328,8 +337,8 @@ export class UIService {
     const diff = subscription.serial.voiceover.filter((voice) => !fan.voiceover.includes(voice));
 
     const keyboard = [];
-    for (const voiceover of diff) {
-      keyboard.push([`${MESSAGE_SUBS_VOICEOVER} ${voiceover}`]);
+    for (const vo of diff) {
+      keyboard.push([`${MESSAGE_SUBS_VOICEOVER} ${vo}`]);
     }
 
     keyboard.push([MESSAGE_SUBS_ALL]);
@@ -344,6 +353,7 @@ export class UIService {
     return this.sendMessage(user, `${MESSAGE_VOICE_ADD} ${voiceover}`, opts);
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public enouthVoiceovers = async (user: User, _message: string): Promise<void> => {
     await this.contextService.clearContext(user);
     return this.sendMessage(user, MESSAGE_OK, this.clearKeyboard);
@@ -355,12 +365,12 @@ export class UIService {
       throw new SwatcherBadRequestException(user, _message);
     }
 
-    const fan = this.subscriptionService.findFan(user, context.subscription);
+    const fan = SubscriptionService.findFan(user, context.subscription);
     if (!fan) {
       throw new SwatcherBadRequestException(user, _message);
     }
 
-    const serial = context.subscription.serial;
+    const { serial } = context.subscription;
     this.logger.log(`Очищаем подписку на озвучки пользователю ${user.id} на сериал ${serial.name}`);
 
     fan.voiceover = [];
@@ -374,20 +384,20 @@ export class UIService {
     let fans = await this.subscriptionService.getSubscribers(data.id);
 
     fans = fans.filter((fan) => {
-      if (fan.voiceover.length == 0) {
+      if (fan.voiceover.length === 0) {
         // all voiceovers
         return true;
       }
 
       // TODO: make lowercase all voiceovers
-      return fan.voiceover.includes(data.voiceover) ? true : false;
+      return !!fan.voiceover.includes(data.voiceover);
     });
 
     // send messages
     const reg = /(субтитры)/i;
     let message = `${data.series} ${data.season}а ${data.name} `;
 
-    if (data.voiceover != undefined && data.voiceover !== '') {
+    if (data.voiceover !== undefined && data.voiceover !== '') {
       if (reg.exec(data.voiceover)) {
         message += 'с субтитрами';
       } else {

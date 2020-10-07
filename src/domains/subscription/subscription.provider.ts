@@ -11,9 +11,9 @@ export class SubscriptionService {
 
   constructor(
     @InjectModel(SUBS_COLLECTION)
-    private populatedSubscription: Model<SubscriptionPopulated>,
+    private PopulatedSubscriptionModel: Model<SubscriptionPopulated>,
     @InjectModel(SUBS_COLLECTION)
-    private subscription: Model<Subscription>,
+    private SubscriptionModel: Model<Subscription>,
   ) {}
 
   private async getSubscription(serial: Serial): Promise<SubscriptionPopulated> {
@@ -22,18 +22,20 @@ export class SubscriptionService {
   }
 
   async findBySerials(serials: Serial[]): Promise<SubscriptionPopulated[]> {
-    return this.populatedSubscription
-      .find({ serial: { $in: serials } })
+    return this.PopulatedSubscriptionModel.find({ serial: { $in: serials } })
       .populate('serial')
       .exec();
   }
 
   async findByUser(user: User): Promise<SubscriptionPopulated[]> {
-    return this.populatedSubscription.find({ 'fans.user': user._id }).populate('serial').exec();
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    return this.PopulatedSubscriptionModel.find({ 'fans.user': user._id })
+      .populate('serial')
+      .exec();
   }
 
-  findFan(user: User, subs: SubscriptionPopulated): FanInterface {
-    return subs.fans.find((fan) => String(fan.user) == String(user._id));
+  static findFan(user: User, subs: SubscriptionPopulated): FanInterface {
+    return subs.fans.find((fan) => String(fan.user) === String(user._id));
   }
 
   async addSubscription(user: User, serial: Serial): Promise<SubscriptionPopulated> {
@@ -48,7 +50,7 @@ export class SubscriptionService {
     let subscription = await this.getSubscription(serial);
     if (!subscription) {
       // create new subscription
-      const subs = new this.subscription();
+      const subs = new this.SubscriptionModel();
       subs.serial = new Types.ObjectId(String(serial._id));
       await subs.save();
 
@@ -56,9 +58,10 @@ export class SubscriptionService {
       subscription = await this.getSubscription(serial);
     }
 
-    const alreadySubscribed = this.findFan(user, subscription);
+    const alreadySubscribed = SubscriptionService.findFan(user, subscription);
     if (!alreadySubscribed) {
       this.logger.log(`Подписали ${user.id} на ${serial.name}`);
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       subscription.fans.push({ user: user._id, voiceover: [] });
       await subscription.save();
     }
@@ -72,7 +75,7 @@ export class SubscriptionService {
       throw new SwatcherBadRequestException(user, serial.name);
     }
 
-    const index = subscription.fans.findIndex((item) => String(item.user) == String(user._id));
+    const index = subscription.fans.findIndex((item) => String(item.user) === String(user._id));
     if (index === -1) {
       throw new SwatcherBadRequestException(user, serial.name);
     }
@@ -93,7 +96,7 @@ export class SubscriptionService {
   }
 
   async getSubscribers(id: string): Promise<FanInterface[]> {
-    const subs = await this.subscription.findOne({ serial: id }).populate('fans.user').exec();
+    const subs = await this.SubscriptionModel.findOne({ serial: id }).populate('fans.user').exec();
 
     if (!subs) {
       return [];

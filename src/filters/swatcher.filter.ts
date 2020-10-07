@@ -23,6 +23,7 @@ export class SwatcherExceptionsFilter implements ExceptionFilter {
     private readonly client: ClientProxy,
   ) {}
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async catch(exception: unknown, _host: ArgumentsHost): Promise<void> {
     let message: string;
     let id: number;

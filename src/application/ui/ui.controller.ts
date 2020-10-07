@@ -19,7 +19,7 @@ export class UIController {
 
   @EventPattern('received_announce')
   async receivedAnnounce(@Payload() data: AnnounceDto): Promise<void> {
-    return this.uiService.receivedAnnounce(data);
+    await this.uiService.receivedAnnounce(data);
   }
 
   @EventPattern('received_message')
@@ -32,23 +32,24 @@ export class UIController {
       if (COMMAND_START.test(text)) {
         this.logger.log(`Создаем нового пользователя ${data.id}`);
         const newUser = await this.userService.create(data.id, data.username);
-        return await this.uiService.sendMessage(newUser, MESSAGE_CREATE_USER(newUser.username, newUser.id));
-      } else {
-        throw new SwatcherUserNotFoundException(data.id);
+        return this.uiService.sendMessage(
+          newUser,
+          MESSAGE_CREATE_USER(newUser.username, newUser.id),
+        );
       }
+      throw new SwatcherUserNotFoundException(data.id);
     }
 
     const handlers = this.uiService.getHandlers();
-    const handler = handlers.find((handler) => {
-      return handler.regexp.test(data.message);
+    const handler = handlers.find((currentHandler) => {
+      return currentHandler.regexp.test(data.message);
     });
 
     if (handler) {
       const message = handler.regexp.exec(text)[1];
-      await handler.handle(user, message);
-    } else {
-      /** default action */
-      await this.uiService.find(user, text);
+      return handler.handle(user, message);
     }
+
+    return this.uiService.find(user, text);
   }
 }

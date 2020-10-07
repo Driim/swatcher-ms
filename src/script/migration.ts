@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import path from 'path';
 import mongoose from 'mongoose';
 import uniqWith from 'lodash.uniqwith';
@@ -149,7 +152,7 @@ const migration = async (): Promise<void> => {
   let progressBar = new ProgressBar('Migrating users', pages);
 
   /** Move users */
-  for (let i = 0; i < pages; i++) {
+  for (let i = 0; i < pages; i += 1) {
     const oldUsers = await OldUserModel.find()
       .skip(i * ITERATION_LIMIT)
       .limit(ITERATION_LIMIT)
@@ -159,7 +162,7 @@ const migration = async (): Promise<void> => {
       const newUser = new UserModel();
       newUser.id = oldUser.id;
       newUser.username = oldUser.username ? oldUser.username : oldUser.first_name;
-      newUser.active = oldUser.active === 1 ? true : false;
+      newUser.active = oldUser.active === 1;
       newUser.payed = oldUser.status ? oldUser.status : 0;
       newUser.type = 'telegram';
 
@@ -175,7 +178,7 @@ const migration = async (): Promise<void> => {
 
   progressBar = new ProgressBar('Migrating serials and subscriptions', pages);
 
-  for (let i = 0; i < pages; i++) {
+  for (let i = 0; i < pages; i += 1) {
     const oldSerials = await OldSerialModel.find({})
       .skip(i * ITERATION_LIMIT)
       .limit(ITERATION_LIMIT)
@@ -198,7 +201,7 @@ const migration = async (): Promise<void> => {
       const oldSeasons = uniqWith(
         oldSerial.season,
         (a: OldSeason, b: OldSeason) => a.name === b.name,
-      ) as OldSeason[];
+      );
 
       for (const oldSeason of oldSeasons) {
         const season = new Season();
@@ -246,7 +249,7 @@ const migration = async (): Promise<void> => {
 
   progressBar = new ProgressBar('Migrating announces', pages);
 
-  for (let i = 0; i < pages; i++) {
+  for (let i = 0; i < pages; i += 1) {
     const oldAnnounces = await OldAnnounceModel.find({})
       .skip(i * ITERATION_LIMIT)
       .limit(ITERATION_LIMIT)
@@ -288,7 +291,7 @@ const migration = async (): Promise<void> => {
 
   progressBar = new ProgressBar('Migrating payers', pages);
 
-  for (let i = 0; i < pages; i++) {
+  for (let i = 0; i < pages; i += 1) {
     const oldPayers = await OldPayerModel.find({})
       .skip(i * ITERATION_LIMIT)
       .limit(ITERATION_LIMIT)
@@ -315,4 +318,9 @@ const migration = async (): Promise<void> => {
   }
 };
 
-migration();
+migration().then(
+  () => {
+    process.exit();
+  },
+  () => {},
+);

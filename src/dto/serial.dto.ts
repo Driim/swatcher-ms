@@ -1,25 +1,5 @@
-import { IsString, IsInt, Min, ValidateNested, IsNotEmpty } from 'class-validator';
-
-class SeasonDto {
-  @IsString()
-  name: string;
-
-  @IsString()
-  desc: string;
-
-  @IsString()
-  img: string;
-
-  @IsString()
-  url: string;
-
-  @IsInt()
-  @Min(1960)
-  starts: number;
-
-  @IsString({ each: true })
-  actors: string[];
-}
+import { IsString, ValidateNested, IsNotEmpty } from 'class-validator';
+import { SeasonDto } from './season.dto';
 
 export class SerialDto {
   @IsString()

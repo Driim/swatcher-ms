@@ -1,15 +1,12 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Cron } from '@nestjs/schedule';
-import { Model, Schema, Types } from 'mongoose';
+import { Model, Schema } from 'mongoose';
 import Fuse from 'fuse.js';
 import { Serial } from '../../interfaces';
 import {
   FUZZY_SORT,
   FUZZY_THRESHOLD,
-  FUZZY_LOCATION,
-  FUZZY_DISTANCE,
-  FUZZY_PATTERN_LENGTH,
   FUZZY_MIN_MATCH,
   SERIAL_COLLECTION,
 } from '../../app.constants';
@@ -17,14 +14,13 @@ import {
 @Injectable()
 export class SerialService {
   private readonly logger = new Logger(SerialService.name);
-  private fuse = null;
+
+  private fuse: Fuse<Serial> = null;
+
   private readonly fuseOpts = {
     includeScore: true,
     shouldSort: FUZZY_SORT,
     threshold: FUZZY_THRESHOLD,
-    // location: FUZZY_LOCATION,
-    // distance: FUZZY_DISTANCE,
-    // maxPatternLength: FUZZY_PATTERN_LENGTH,
     minMatchCharLength: FUZZY_MIN_MATCH,
     /* searching only in serials names */
     keys: ['name'],
@@ -33,11 +29,12 @@ export class SerialService {
   constructor(@InjectModel(SERIAL_COLLECTION) private serial: Model<Serial>) {}
 
   private async findByIds(ids: string[]): Promise<Serial[]> {
-    return await this.serial.find({ _id: { $in: ids } }).exec();
+    return this.serial.find({ _id: { $in: ids } }).exec();
   }
 
-  onApplicationBootstrap() {
+  onApplicationBootstrap(): void {
     this.logger.log('Application bootstrap index update');
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     this.updateIndex();
   }
 
@@ -50,7 +47,7 @@ export class SerialService {
   }
 
   async findExact(name: string): Promise<Serial> {
-    return await this.serial.findOne({ name }).exec();
+    return this.serial.findOne({ name }).exec();
   }
 
   async find(name: string): Promise<Serial[]> {

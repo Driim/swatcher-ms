@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 import money from 'yandex-money-sdk';
 import { Model } from 'mongoose';
 import { Interval } from '@nestjs/schedule';
@@ -27,12 +28,14 @@ export interface YandexOperation {
 @Injectable()
 export class YandexService {
   private wallet: money.Wallet;
+
   private premiumCost: number;
+
   private readonly logger = new Logger(YandexService.name);
 
   constructor(
     @InjectSentry() private readonly client: SentryService,
-    @InjectModel(PAYER_COLLECTION) private payerModel: Model<Payer>,
+    @InjectModel(PAYER_COLLECTION) private PayerModel: Model<Payer>,
     private readonly userService: UserService,
     config: ConfigService,
   ) {
@@ -43,6 +46,7 @@ export class YandexService {
   private async operationHistory(
     options: YandexMoneySDK.Wallet.OperationHistoryOptions,
   ): Promise<YandexMoneySDK.Wallet.OperationHistoryResult> {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     const service = this;
     return new Promise((resolve, reject) => {
       service.wallet.operationHistory(options, (err, operations) => {
@@ -56,23 +60,24 @@ export class YandexService {
     });
   }
 
-  async handleOperations(operations: YandexOperation[]) {
+  async handleOperations(operations: YandexOperation[]): Promise<void> {
     for (const operation of operations) {
       if (operation.amount < this.premiumCost || operation.status !== 'success') {
         continue;
       }
 
       const userId = parseInt(operation.message, 10);
-      if (isNaN(userId)) {
+      if (Number.isNaN(userId)) {
         continue;
       }
 
       const user = await this.userService.find(userId);
       if (user) {
         /** check operation */
-        const alreadyExist = await this.payerModel.findOne({
+        const alreadyExist = await this.PayerModel.findOne({
           amount: operation.amount,
           date: new Date(operation.datetime),
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           user: user._id,
         });
 
@@ -81,10 +86,12 @@ export class YandexService {
           return;
         }
 
-        await this.userService.setPayed(user);
-        const newPayer = new this.payerModel();
+        user.payed = 1;
+        await user.save();
+        const newPayer = new this.PayerModel();
         newPayer.amount = operation.amount;
         newPayer.date = new Date(operation.datetime);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         newPayer.user = user._id;
 
         await newPayer.save();
@@ -93,7 +100,7 @@ export class YandexService {
   }
 
   @Interval(45000)
-  async getOperations() {
+  async getOperations(): Promise<void> {
     let operations: YandexOperation[] = [];
 
     try {
@@ -101,7 +108,7 @@ export class YandexService {
        * Using 'as' because OperationHistoryOptions in
        * index.d.ts(yandex-money-sdk) says label is not
        * optional, but it is.
-       **/
+       * */
       const history = await this.operationHistory({
         type: 'deposition',
         records: OPERATIONS_COUNT,

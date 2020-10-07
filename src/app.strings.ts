@@ -1,4 +1,4 @@
-import { MAX_FREE_SERIALS } from "./app.constants";
+import { MAX_FREE_SERIALS } from './app.constants';
 
 export const MESSAGE_TOO_SHORT = 'Слишком короткий запрос, попробуйте другой';
 export const MESSAGE_REMOVE_USER = 'Что ж, пока!';
@@ -27,7 +27,7 @@ export const MESSAGE_FIND_EXT = (count: number): string =>
   Если тут нет искомого сериала, то уточните запрос.`;
 export const MESSAGE_CREATE_USER = (
   username: string,
-  id: number
+  id: number,
 ): string => `${username} вы были зарегистрированны в системе,
 теперь вам нужно добавить отслеживаемые вами сериалы.
 Просто отправьте боту название интересующего вас сериала.

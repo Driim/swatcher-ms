@@ -1,9 +1,10 @@
-/* eslint-disable @typescript-eslint/camelcase */
+/* eslint-disable @typescript-eslint/unbound-method */
 import { Test, TestingModule } from '@nestjs/testing';
 import { MongooseModule, getModelToken } from '@nestjs/mongoose';
 import { SentryModule } from '@ntegral/nestjs-sentry';
 import { LogLevel } from '@sentry/types';
 import { Model } from 'mongoose';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import {
   USER_COLLECTION,
   SERIAL_COLLECTION,
@@ -27,7 +28,6 @@ import {
 } from '../../app.strings';
 import { ContextService } from '../../domains/context/context.provider';
 import { ContextPopulated } from '../../interfaces/context.interface';
-import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AnnounceDto } from '../../dto/announce.dto';
 
 describe('Swatcher UI', () => {
@@ -37,10 +37,10 @@ describe('Swatcher UI', () => {
   let subscriptionService: SubscriptionService;
   let contextService: ContextService;
 
-  let userModel: Model<User>;
-  let serialModel: Model<Serial>;
-  let contextModel: Model<ContextPopulated>;
-  let subscriptionModel: Model<SubscriptionPopulated>;
+  let UserModel: Model<User>;
+  let SerialModel: Model<Serial>;
+  let ContexModel: Model<ContextPopulated>;
+  let SubscriptionModel: Model<SubscriptionPopulated>;
 
   let defaultUser: User;
   let defaultSerial: Serial;
@@ -53,7 +53,7 @@ describe('Swatcher UI', () => {
       imports: [
         ConfigModule.forRoot({ isGlobal: true }),
         MongooseModule.forRootAsync({
-          useFactory: async () => ({
+          useFactory: () => ({
             uri: 'mongodb://localhost:27017/swatcher_test',
             useNewUrlParser: true,
             useUnifiedTopology: true,
@@ -62,12 +62,12 @@ describe('Swatcher UI', () => {
         }),
         SentryModule.forRootAsync({
           imports: [ConfigModule],
-          useFactory: async (cfg: ConfigService) => ({
+          useFactory: (cfg: ConfigService) => ({
             dsn: cfg.get('SENTRY_DSN'),
             debug: true,
             environment: 'development',
             release: null, // must create a release in sentry.io dashboard
-            logLevel: LogLevel.Debug, //based on sentry.io loglevel //
+            logLevel: LogLevel.Debug, // based on sentry.io loglevel //
           }),
           inject: [ConfigService],
         }),
@@ -81,16 +81,16 @@ describe('Swatcher UI', () => {
     subscriptionService = app.get<SubscriptionService>(SubscriptionService);
     contextService = app.get<ContextService>(ContextService);
 
-    userModel = app.get<Model<User>>(getModelToken(USER_COLLECTION));
-    serialModel = app.get<Model<Serial>>(getModelToken(SERIAL_COLLECTION));
-    contextModel = app.get<Model<ContextPopulated>>(getModelToken(CONTEXT_COLLECTION));
-    subscriptionModel = app.get<Model<SubscriptionPopulated>>(getModelToken(SUBS_COLLECTION));
+    UserModel = app.get<Model<User>>(getModelToken(USER_COLLECTION));
+    SerialModel = app.get<Model<Serial>>(getModelToken(SERIAL_COLLECTION));
+    ContexModel = app.get<Model<ContextPopulated>>(getModelToken(CONTEXT_COLLECTION));
+    SubscriptionModel = app.get<Model<SubscriptionPopulated>>(getModelToken(SUBS_COLLECTION));
   });
 
   beforeEach(async () => {
     defaultUser = await userService.create(1, 'user');
 
-    defaultSerial = new serialModel();
+    defaultSerial = new SerialModel();
     defaultSerial.name = TESTING_NAME;
     defaultSerial.alias = ['Alias'];
     defaultSerial.country = ['Russia'];
@@ -103,14 +103,14 @@ describe('Swatcher UI', () => {
 
   afterEach(async () => {
     jest.restoreAllMocks();
-    await subscriptionModel.deleteMany({});
-    await userModel.deleteMany({});
-    await serialModel.deleteMany({});
+    await SubscriptionModel.deleteMany({});
+    await UserModel.deleteMany({});
+    await SerialModel.deleteMany({});
   });
 
   afterAll(async () => {
     /** cleanup and exit */
-    app.close();
+    return app.close();
   });
 
   describe('find serial', () => {
@@ -229,7 +229,8 @@ describe('Swatcher UI', () => {
     it('should throw error if fan not subscribed', async () => {
       const user = await userService.create(2, 'user');
       const subs = await subscriptionService.addSubscription(user, defaultSerial);
-      const context = new contextModel();
+      const context = new ContexModel();
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       context.user = defaultUser._id; /** wrong user */
       context.subscription = subs;
 
@@ -306,7 +307,8 @@ describe('Swatcher UI', () => {
     it('should throw error if no fan', async () => {
       const user = await userService.create(2, 'user');
       const subs = await subscriptionService.addSubscription(user, defaultSerial);
-      const context = new contextModel();
+      const context = new ContexModel();
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       context.user = defaultUser._id; /** wrong user */
       context.subscription = subs;
 
@@ -338,7 +340,7 @@ describe('Swatcher UI', () => {
   });
 
   describe('received announce', () => {
-    let defaultDto;
+    let defaultDto: AnnounceDto;
 
     beforeEach(() => {
       defaultDto = new AnnounceDto();

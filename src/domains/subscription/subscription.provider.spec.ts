@@ -2,6 +2,7 @@
 import { Model, Types } from 'mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
 import { MongooseModule, getModelToken } from '@nestjs/mongoose';
+import { ConfigModule } from '@nestjs/config';
 import { SUBS_COLLECTION, SERIAL_COLLECTION, USER_COLLECTION } from '../../app.constants';
 import { Serial } from '../../interfaces/serial.interface';
 import { SubscriptionService } from './subscription.provider';
@@ -13,15 +14,14 @@ import { UserModule } from '../user/user.module';
 import { UserService } from '../user/user.provider';
 import { SwatcherLimitExceedException, SwatcherBadRequestException } from '../../exceptions';
 import { User } from '../../interfaces';
-import { ConfigModule } from '@nestjs/config';
 
 describe('Serial Service', () => {
   let subsService: SubscriptionService;
   let serialService: SerialService;
-  let subscriptionModel: Model<Subscription>;
-  let subscriptionPopulatedModel: Model<SubscriptionPopulated>;
-  let serialModel: Model<Serial>;
-  let userModel: Model<User>;
+  let SubscriptionModel: Model<Subscription>;
+  let SubscriptionPopulatedModel: Model<SubscriptionPopulated>;
+  let SerialModel: Model<Serial>;
+  let UserModel: Model<User>;
   let serial: Serial;
   let userService: UserService;
 
@@ -34,7 +34,7 @@ describe('Serial Service', () => {
       imports: [
         ConfigModule.forRoot({ isGlobal: true }),
         MongooseModule.forRootAsync({
-          useFactory: async () => ({
+          useFactory: () => ({
             uri: 'mongodb://localhost:27017/swatcher_test',
             useNewUrlParser: true,
             useUnifiedTopology: true,
@@ -49,15 +49,15 @@ describe('Serial Service', () => {
 
     subsService = app.get<SubscriptionService>(SubscriptionService);
     serialService = app.get<SerialService>(SerialService);
-    subscriptionModel = app.get<Model<Subscription>>(getModelToken(SUBS_COLLECTION));
-    subscriptionPopulatedModel = app.get<Model<SubscriptionPopulated>>(
+    SubscriptionModel = app.get<Model<Subscription>>(getModelToken(SUBS_COLLECTION));
+    SubscriptionPopulatedModel = app.get<Model<SubscriptionPopulated>>(
       getModelToken(SUBS_COLLECTION),
     );
-    serialModel = app.get<Model<Serial>>(getModelToken(SERIAL_COLLECTION));
+    SerialModel = app.get<Model<Serial>>(getModelToken(SERIAL_COLLECTION));
     userService = app.get<UserService>(UserService);
-    userModel = app.get<Model<User>>(getModelToken(USER_COLLECTION));
+    UserModel = app.get<Model<User>>(getModelToken(USER_COLLECTION));
 
-    serial = new serialModel();
+    serial = new SerialModel();
     serial.name = TESTING_NAME;
     serial.alias = ['Alias'];
     serial.country = ['Russia'];
@@ -70,18 +70,18 @@ describe('Serial Service', () => {
 
   afterEach(async () => {
     jest.restoreAllMocks();
-    await userModel.deleteMany({}).exec();
-    await subscriptionModel.deleteMany({}).exec();
+    await UserModel.deleteMany({}).exec();
+    await SubscriptionModel.deleteMany({}).exec();
   });
 
   afterAll(async () => {
-    await serialModel.deleteMany({}).exec();
-    app.close();
+    await SerialModel.deleteMany({}).exec();
+    return app.close();
   });
 
   describe('findBySerials', () => {
     it('should find subscriptions', async () => {
-      const subscription = new subscriptionModel();
+      const subscription = new SubscriptionModel();
       subscription.serial = new Types.ObjectId(String(serial._id));
       await subscription.save();
 
@@ -96,9 +96,10 @@ describe('Serial Service', () => {
   describe('findByUser', () => {
     it('should find subscriptions', async () => {
       const user = await userService.create(1, 'user');
-      const subscription = new subscriptionModel();
+      const subscription = new SubscriptionModel();
       subscription.serial = new Types.ObjectId(String(serial._id));
       subscription.fans.push({
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         user: user._id,
         voiceover: [],
       });
@@ -119,7 +120,7 @@ describe('Serial Service', () => {
     });
 
     it('should throw error if user exceed limit', async () => {
-      const subs = new subscriptionPopulatedModel();
+      const subs = new SubscriptionPopulatedModel();
       jest.spyOn(subsService, 'findByUser').mockResolvedValue([subs, subs, subs]);
 
       await expect(subsService.addSubscription(user, serial)).rejects.toThrowError(
@@ -196,7 +197,6 @@ describe('Serial Service', () => {
 
     it('should return array with populated users', async () => {
       const user = await userService.create(2, 'test');
-      const subs = await subsService.addSubscription(user, serial);
 
       const fans = await subsService.getSubscribers(String(serial._id));
 

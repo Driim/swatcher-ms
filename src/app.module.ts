@@ -3,18 +3,18 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { SentryModule } from '@ntegral/nestjs-sentry';
 import { LogLevel } from '@sentry/types';
+import { ScheduleModule } from '@nestjs/schedule';
 import { SerialModule } from './domains/serial/serial.module';
 import { UserModule } from './domains/user/user.module';
 import { UIModule } from './application/ui/ui.module';
 import { YandexModule } from './application/yandex/yandex.module';
-import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
-      useFactory: async (configService: ConfigService) => ({
+      useFactory: (configService: ConfigService) => ({
         uri: configService.get<string>('MONGODB_URI'),
         useNewUrlParser: true,
         useUnifiedTopology: true,
@@ -24,12 +24,12 @@ import { ScheduleModule } from '@nestjs/schedule';
     }),
     SentryModule.forRootAsync({
       imports: [ConfigModule],
-      useFactory: async (cfg: ConfigService) => ({
+      useFactory: (cfg: ConfigService) => ({
         dsn: cfg.get('SENTRY_DSN'),
         debug: true,
         environment: 'production',
         release: null, // must create a release in sentry.io dashboard
-        logLevel: LogLevel.Debug, //based on sentry.io loglevel //
+        logLevel: LogLevel.Debug, // based on sentry.io loglevel //
       }),
       inject: [ConfigService],
     }),

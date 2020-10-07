@@ -1,13 +1,13 @@
 import { Module } from '@nestjs/common';
+import { Transport, ClientProxyFactory, ClientProxy } from '@nestjs/microservices';
+import { ConfigService } from '@nestjs/config';
 import { UIService } from './ui.service';
 import { UIController } from './ui.controller';
-import { Transport, ClientProxyFactory, ClientProxy } from '@nestjs/microservices';
 import { TRANSPORT_SERVICE } from '../../app.constants';
 import { UserModule } from '../../domains/user/user.module';
 import { SubscriptionModule } from '../../domains/subscription/subscription.module';
 import { SerialModule } from '../../domains/serial/serial.module';
 import { ContextModule } from '../../domains/context/context.module';
-import { ConfigService } from '@nestjs/config';
 
 @Module({
   imports: [UserModule, SubscriptionModule, SerialModule, ContextModule],

@@ -1,8 +1,8 @@
 import 'reflect-metadata';
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
 import { Logger } from '@nestjs/common';
 import { Transport } from '@nestjs/microservices';
+import { AppModule } from './app.module';
 
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.createMicroservice(AppModule, {
@@ -11,4 +11,8 @@ async function bootstrap(): Promise<void> {
 
   app.listen(() => Logger.log('User Interface microservice started'));
 }
-bootstrap();
+
+bootstrap().then(
+  () => {},
+  () => {},
+);

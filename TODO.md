@@ -1,3 +1,4 @@
+ - Проверить обработку handle_block и handle_error
  - Переименовать provider -> service
  - Отказаться от библиотеки fuzzy.js и перейти на плагин для mongo
  - Сделать индексы

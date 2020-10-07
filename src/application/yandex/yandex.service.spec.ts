@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/unbound-method */
 import { Model } from 'mongoose';
 import { TestingModule, Test } from '@nestjs/testing';
 import { MongooseModule, getModelToken } from '@nestjs/mongoose';
@@ -13,7 +14,7 @@ import { PAYER_COLLECTION } from '../../app.constants';
 describe('Yandex Money Service', () => {
   let service: YandexService;
   let userService: UserService;
-  let model: Model<Payer>;
+  let PayerModel: Model<Payer>;
   let config: ConfigService;
   let payer: Payer;
   let app: TestingModule;
@@ -23,7 +24,7 @@ describe('Yandex Money Service', () => {
       imports: [
         ConfigModule.forRoot({ isGlobal: true }),
         MongooseModule.forRootAsync({
-          useFactory: async () => ({
+          useFactory: () => ({
             uri: 'mongodb://localhost:27017/swatcher_test',
             useNewUrlParser: true,
             useUnifiedTopology: true,
@@ -32,12 +33,12 @@ describe('Yandex Money Service', () => {
         }),
         SentryModule.forRootAsync({
           imports: [ConfigModule],
-          useFactory: async (cfg: ConfigService) => ({
+          useFactory: (cfg: ConfigService) => ({
             dsn: cfg.get('SENTRY_DSN'),
             debug: true,
             environment: 'development',
             release: null, // must create a release in sentry.io dashboard
-            logLevel: LogLevel.Debug, //based on sentry.io loglevel //
+            logLevel: LogLevel.Debug, // based on sentry.io loglevel //
           }),
           inject: [ConfigService],
         }),
@@ -47,14 +48,13 @@ describe('Yandex Money Service', () => {
 
     service = app.get<YandexService>(YandexService);
     config = app.get<ConfigService>(ConfigService);
-    model = app.get<Model<Payer>>(getModelToken(PAYER_COLLECTION));
+    PayerModel = app.get<Model<Payer>>(getModelToken(PAYER_COLLECTION));
     userService = app.get<UserService>(UserService);
-    payer = new model();
+    payer = new PayerModel();
   });
 
   beforeEach(() => {
-    jest.spyOn(model, 'findOne').mockResolvedValue(undefined);
-    jest.spyOn(userService, 'setPayed').mockResolvedValue();
+    jest.spyOn(PayerModel, 'findOne').mockResolvedValue(undefined);
     jest.spyOn(payer, 'save').mockResolvedValue(undefined);
   });
 
@@ -106,7 +106,7 @@ describe('Yandex Money Service', () => {
 
     it('should not do anything if user doesnt exists', async () => {
       jest.spyOn(userService, 'find').mockResolvedValue(undefined);
-      jest.spyOn(model, 'findOne').mockResolvedValue({} as Payer);
+      jest.spyOn(PayerModel, 'findOne').mockResolvedValue({} as Payer);
 
       const premiumCost = config.get<number>('PREMIUM_COST');
       const operations: YandexOperation[] = [
@@ -120,13 +120,12 @@ describe('Yandex Money Service', () => {
       await service.handleOperations(operations);
 
       expect(userService.find).toBeCalled();
-      expect(model.findOne).not.toBeCalled();
+      expect(PayerModel.findOne).not.toBeCalled();
     });
 
     it('should stop handling if operations already handled', async () => {
       jest.spyOn(userService, 'find').mockResolvedValue({} as User);
-      jest.spyOn(userService, 'setPayed').mockResolvedValue();
-      jest.spyOn(model, 'findOne').mockResolvedValue({} as Payer);
+      jest.spyOn(PayerModel, 'findOne').mockResolvedValue({} as Payer);
 
       const premiumCost = config.get<number>('PREMIUM_COST');
       const operations: YandexOperation[] = [
@@ -140,8 +139,7 @@ describe('Yandex Money Service', () => {
       await service.handleOperations(operations);
 
       expect(userService.find).toBeCalled();
-      expect(model.findOne).toBeCalled();
-      expect(userService.setPayed).not.toBeCalled();
+      expect(PayerModel.findOne).toBeCalled();
     });
 
     it('should set user payed status and save operation', async () => {
