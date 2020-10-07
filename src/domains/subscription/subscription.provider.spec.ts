@@ -198,6 +198,7 @@ describe('Serial Service', () => {
     it('should return array with populated users', async () => {
       const user = await userService.create(2, 'test');
 
+      await subsService.addSubscription(user, serial);
       const fans = await subsService.getSubscribers(String(serial._id));
 
       expect(Array.isArray(fans)).toBeTruthy();
