@@ -1,4 +1,3 @@
-import escapeString from 'escape-string-regexp';
 import { Controller, Logger, UsePipes, ValidationPipe, UseFilters } from '@nestjs/common';
 import { EventPattern, Payload } from '@nestjs/microservices';
 import { SwatcherUserNotFoundException } from '../../exceptions/user-not-found.exception';
@@ -8,6 +7,9 @@ import { UserService } from '../../domains/user/user.provider';
 import { UIService } from './ui.service';
 import { COMMAND_START } from '../../app.constants';
 import { SwatcherExceptionsFilter, UnhandledExceptionsFilter } from '../../filters';
+
+// eslint-disable-next-line no-useless-escape
+const escapeRegexp = (str: string) => str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, '\\$&');
 
 @Controller()
 @UsePipes(ValidationPipe)
@@ -25,7 +27,7 @@ export class UIController {
   @EventPattern('received_message')
   async receivedMessage(@Payload() data: TelegramMessageDto): Promise<void> {
     const user = await this.userService.find(data.id);
-    const text = escapeString(data.message);
+    const text = escapeRegexp(data.message);
 
     if (!user) {
       /* The only command working without registration */
