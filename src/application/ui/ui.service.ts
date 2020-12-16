@@ -164,9 +164,8 @@ export class UIService {
 
     let subscriptions = await this.subscriptionService.findBySerials(serials);
     const originalLength = subscriptions.length;
-    subscriptions = subscriptions
-      .sort((a, b) => b.fans.length - a.fans.length)
-      .slice(0, MAX_SEARCH_COUNT);
+    subscriptions.sort((a, b) => b.fans.length - a.fans.length);
+    subscriptions = subscriptions.slice(0, MAX_SEARCH_COUNT);
 
     const keyboard = [];
 
