@@ -58,7 +58,7 @@ describe('Serial Service', () => {
     });
 
     it("should return empty array if fuse not init and exact match doesn't find anything", async () => {
-      const result = await service.find('Test');
+      const result = await service.find('Miracle');
 
       expect(result.length).toBe(0);
     });
@@ -66,7 +66,7 @@ describe('Serial Service', () => {
     it('should use fuzzy search', async () => {
       await service.updateIndex();
 
-      const result = await service.find('Miracle');
+      const result = await service.find('Test');
 
       expect(result.length).toBe(1);
       expect(result[0].name).toBe(TESTING_NAME);
