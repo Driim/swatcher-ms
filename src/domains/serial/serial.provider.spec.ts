@@ -66,7 +66,7 @@ describe('Serial Service', () => {
     it('should use fuzzy search', async () => {
       await service.updateIndex();
 
-      const result = await service.find('Test');
+      const result = await service.find('Miracle');
 
       expect(result.length).toBe(1);
       expect(result[0].name).toBe(TESTING_NAME);
