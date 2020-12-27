@@ -53,7 +53,7 @@ export class SerialService {
   async find(name: string): Promise<Serial[]> {
     const exactMatch = await this.serial
       .find()
-      .or([{ name }, { alias: name }])
+      .or([{ name: new RegExp(name, 'i') }, { alias: new RegExp(name, 'i') }])
       .exec();
 
     if (exactMatch.length > 0) {
