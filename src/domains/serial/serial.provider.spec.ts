@@ -51,6 +51,12 @@ describe('Serial Service', () => {
   });
 
   describe('find', () => {
+    it('should first use exact search', async () => {
+      const result = await service.find(TESTING_NAME);
+
+      expect(result.length).toBe(1);
+    });
+
     it("should return empty array if fuse not init and exact match doesn't find anything", async () => {
       const result = await service.find('Test');
 
