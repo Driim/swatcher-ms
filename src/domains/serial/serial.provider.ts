@@ -51,18 +51,12 @@ export class SerialService {
   }
 
   async find(name: string): Promise<Serial[]> {
-    const exactMatch = await this.serial
-      .find()
-      .or([{ name }, { alias: name }])
-      .exec();
-
-    if (exactMatch.length > 0) {
-      return exactMatch;
-    }
-
     if (!this.fuse) {
       this.logger.warn(`Точного совпадения по ${name} нет, а для неточного поиска нет индекса!`);
-      return [];
+      return this.serial
+        .find()
+        .or([{ name }, { alias: name }])
+        .exec();
     }
 
     const notExactMatch = this.fuse.search(name) as Array<{
