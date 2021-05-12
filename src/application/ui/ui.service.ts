@@ -383,6 +383,8 @@ export class UIService {
     let fans = await this.subscriptionService.getSubscribers(data.id);
 
     fans = fans.filter((fan) => {
+      if ((fan.user as User).active === false) return false;
+
       if (fan.voiceover.length === 0) {
         // all voiceovers
         return true;
