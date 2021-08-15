@@ -9,7 +9,7 @@ import { COMMAND_START } from '../../app.constants';
 import { SwatcherExceptionsFilter, UnhandledExceptionsFilter } from '../../filters';
 
 // eslint-disable-next-line no-useless-escape
-const escapeRegexp = (str: string) => str.replace(/[\[\]\{\}\*\+\?\.\\\^\$\|]/g, '\\$&');
+const escapeRegexp = (str: string) => str.replace(/[\[\]\{\}\+\\\^\$\|]/g, '\\$&');
 
 @Controller()
 @UsePipes(ValidationPipe)
